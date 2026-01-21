@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 // Creates a demo auction with anonymous bidders for screenshots
 
-import { connectMongo, Users } from '@tac/db'
-import { config } from '@tac/env'
+import { connectMongo, Users } from '../packages/db/src/index.js'
+import { config } from '../packages/env/src/index.js'
 
 const API_URL = process.env.API_URL || 'http://localhost:3000'
 

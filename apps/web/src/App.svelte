@@ -184,6 +184,16 @@
     -webkit-user-select: none;
     user-select: none;
     overscroll-behavior: none;
+    overflow-x: hidden;
+  }
+
+  :global(html) {
+    overflow-y: scroll;
+  }
+
+  :global(#app) {
+    overflow-x: hidden;
+    min-height: 100vh;
   }
 
   :global(body) {
