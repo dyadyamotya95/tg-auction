@@ -50,32 +50,45 @@ function verifyWsInitData(initData: string): { ok: true; userId: number } | { ok
   return { ok: true, userId: res.user.id }
 }
 
+const pendingAuth = new Map<object, { auctionId: string; timeout: ReturnType<typeof setTimeout> }>()
+
 app.get(
   '/api/v1/ws/auction/:id',
   upgradeWebSocket((c) => {
     const auctionId = c.req.param('id')
-    const initData = c.req.query('init_data') || ''
-
-    const authResult = verifyWsInitData(initData)
-    if (!authResult.ok) {
-      return {
-        onOpen(_event, ws) {
-          ws.send(JSON.stringify({ type: 'error', error: authResult.error, ts: Date.now() }))
-          ws.close(4001, authResult.error)
-        },
-      }
-    }
-
-    const userId = authResult.userId
 
     return {
       onOpen(_event, ws) {
-        addClient(ws, auctionId, userId)
-        ws.send(JSON.stringify({ type: 'connected', auction_id: auctionId, ts: Date.now() }))
+        const timeout = setTimeout(() => {
+          pendingAuth.delete(ws)
+          ws.send(JSON.stringify({ type: 'error', error: 'auth timeout', ts: Date.now() }))
+          ws.close(4001, 'auth timeout')
+        }, 5000)
+        pendingAuth.set(ws, { auctionId, timeout })
       },
       onMessage(event, ws) {
         try {
           const msg = JSON.parse(String(event.data))
+
+          const pending = pendingAuth.get(ws)
+          if (pending) {
+            if (msg.type === 'auth' && typeof msg.init_data === 'string') {
+              clearTimeout(pending.timeout)
+              pendingAuth.delete(ws)
+
+              const authResult = verifyWsInitData(msg.init_data)
+              if (!authResult.ok) {
+                ws.send(JSON.stringify({ type: 'error', error: authResult.error, ts: Date.now() }))
+                ws.close(4001, authResult.error)
+                return
+              }
+
+              addClient(ws, pending.auctionId, authResult.userId)
+              ws.send(JSON.stringify({ type: 'connected', auction_id: pending.auctionId, ts: Date.now() }))
+            }
+            return
+          }
+
           if (msg.type === 'ping') {
             ws.send(JSON.stringify({ type: 'pong', ts: Date.now() }))
           }
@@ -84,6 +97,11 @@ app.get(
         }
       },
       onClose(_event, ws) {
+        const pending = pendingAuth.get(ws)
+        if (pending) {
+          clearTimeout(pending.timeout)
+          pendingAuth.delete(ws)
+        }
         removeClient(ws)
       },
     }

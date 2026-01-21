@@ -56,17 +56,20 @@ export class AuctionWebSocket {
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host
-    const url = `${protocol}//${host}/api/v1/ws/auction/${this.auctionId}?init_data=${encodeURIComponent(this.initData)}`
+    const url = `${protocol}//${host}/api/v1/ws/auction/${this.auctionId}`
 
     this.ws = new WebSocket(url)
 
     this.ws.onopen = () => {
-      this.startPing()
+      this.ws?.send(JSON.stringify({ type: 'auth', init_data: this.initData }))
     }
 
     this.ws.onmessage = (e) => {
       try {
         const event = JSON.parse(e.data) as AuctionEvent
+        if (event.type === 'connected') {
+          this.startPing()
+        }
         for (const listener of this.listeners) {
           listener(event)
         }
