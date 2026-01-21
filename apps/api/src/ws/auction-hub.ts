@@ -43,6 +43,10 @@ export function broadcastToAuction(auctionId: string, message: object) {
   const data = JSON.stringify(message)
   for (const ws of room) {
     try {
+      if (ws.readyState !== 1) {
+        removeClient(ws)
+        continue
+      }
       ws.send(data)
     } catch {
       removeClient(ws)

@@ -15,7 +15,8 @@
   let auctions: AuctionListItemDTO[] = []
   let loading = true
   let filter: 'all' | 'active' | 'completed' = 'all'
-  let pollTimer: ReturnType<typeof setInterval> | null = null
+  let pollTimer: ReturnType<typeof setTimeout> | null = null
+  let isPolling = false
 
   async function load(silent = false) {
     if (!silent) {
@@ -30,15 +31,28 @@
     }
   }
 
+  async function poll() {
+    if (isPolling) return
+    isPolling = true
+    try {
+      await load(true)
+    } finally {
+      isPolling = false
+      schedulePoll()
+    }
+  }
+
+  function schedulePoll() {
+    if (pollTimer) clearTimeout(pollTimer)
+    pollTimer = setTimeout(poll, 1000)
+  }
+
   onMount(() => {
-    load()
-    pollTimer = setInterval(() => load(true), 1000)
+    load().then(schedulePoll)
   })
 
   onDestroy(() => {
-    if (pollTimer) {
-      clearInterval(pollTimer)
-    }
+    if (pollTimer) clearTimeout(pollTimer)
   })
 
   function setFilter(f: typeof filter) {

@@ -79,6 +79,7 @@ export class AuctionWebSocket {
     }
 
     this.ws.onclose = () => {
+      this.ws = null
       this.cleanup()
       this.scheduleReconnect()
     }
