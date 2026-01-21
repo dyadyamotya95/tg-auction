@@ -2,9 +2,12 @@
 // Creates a demo auction with anonymous bidders for screenshots
 
 import { connectMongo, Users } from '../packages/db/src/index.js'
-import { config } from '../packages/env/src/index.js'
+import { loadRootDotenv, readEnv } from '../packages/env/src/index.js'
 
-const API_URL = process.env.API_URL || 'http://localhost:3000'
+loadRootDotenv()
+
+const MONGO_URI = readEnv(process.env, 'MONGO_URI') ?? 'mongodb://localhost:27017/tac'
+const API_URL = readEnv(process.env, 'API_URL') ?? 'http://localhost:3000'
 
 const DEMO_BIDDERS = [
   { id: 90001, name: 'Cosmic Cat', photo: 'g03-cat', amount: '2450' },
@@ -32,7 +35,7 @@ async function api<T = unknown>(
 }
 
 async function main() {
-  await connectMongo(config.mongo.uri)
+  await connectMongo(MONGO_URI)
   
   const creatorId = 89999
 
