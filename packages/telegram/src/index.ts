@@ -1,5 +1,7 @@
 import { parse, validate } from '@tma.js/init-data-node'
 
+export { initTgNotify, tgNotify } from './notifications.js'
+
 export type TelegramInitDataParsed = ReturnType<typeof parse>
 
 export type TelegramInitDataUser = {

@@ -4,7 +4,11 @@
   "type": "module",
   "version": "0.0.0",
   "dependencies": {
-    "@tma.js/init-data-node": "^2.0.6"
+    "@tma.js/init-data-node": "^2.0.6",
+    "grammy": "^1.35.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29"
   },
   "exports": {
     ".": "./src/index.ts"

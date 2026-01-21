@@ -15,4 +15,7 @@ export const config = Object.freeze({
   telegram: Object.freeze({
     bot_token: readEnv(env, 'TELEGRAM_BOT_TOKEN') ?? '',
   }),
+  webapp: Object.freeze({
+    url: readEnv(env, 'WEBAPP_URL') ?? '',
+  }),
 })

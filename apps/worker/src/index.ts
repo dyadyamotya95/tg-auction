@@ -1,9 +1,11 @@
 import { connectMongo } from '@tac/db'
+import { initTgNotify } from '@tac/telegram'
 import { config } from './config.js'
 import { tick } from './finalize.js'
 
 async function main() {
   await connectMongo(config.mongo.uri)
+  initTgNotify(config.telegram.bot_token, config.webapp.url)
   console.log('Worker started, polling every', config.worker.interval_ms, 'ms')
 
   const run = async () => {

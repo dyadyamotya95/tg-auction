@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import Big from 'big.js'
 import { Auctions, Rounds, Bids, Wallets, LedgerEntries, Gifts } from '@tac/db'
 import { rankBids, getTopK } from '@tac/core'
+import { tgNotify } from '@tac/telegram'
 
 export async function startDueAuctions(now: Date) {
   const due = await Auctions.find({
@@ -225,6 +226,13 @@ export async function finalizeRound(round: {
         ok = true
       })
 
+      if (ok) {
+        const gift = await Gifts.findOne({ auction_id: auctionId, bid_id: w._id }).lean()
+        if (gift) {
+          tgNotify.win(w.user_id, gift.gift_number, auction.auction_name)
+        }
+      }
+
       return ok
     } catch (err) {
       console.error('Winner finalize failed', w.user_id, err)
@@ -303,6 +311,10 @@ export async function finalizeRound(round: {
 
         ok = true
       })
+
+      if (ok) {
+        tgNotify.refund(b.user_id, b.amount, auction.auction_name)
+      }
 
       return ok
     } catch (err) {
@@ -393,6 +405,14 @@ export async function finalizeRound(round: {
             throw err
           }
         }
+
+        tgNotify.transferred(
+          b.user_id,
+          round.round_number,
+          nextRoundConfig.round_number,
+          String(auctionId),
+          auction.auction_name,
+        )
       } catch (err) {
         transferOk = false
         console.error('Transfer failed for user', b.user_id, err)

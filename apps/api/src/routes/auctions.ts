@@ -31,6 +31,7 @@ import type {
 } from '@tac/shared'
 import { getAuth, type AuthEnv } from '../middleware/auth.js'
 import { notifyBid, notifyRoundExtended, type LeaderboardEntry } from '../ws/auction-hub.js'
+import { tgNotify } from '@tac/telegram'
 
 const auctions = new Hono<AuthEnv>()
 
@@ -501,6 +502,24 @@ auctions.post('/:id/bid', async (c) => {
   const now = new Date()
   const MAX_ATTEMPTS = 3
 
+  const auctionDoc = await Auctions.findById(id).lean()
+  if (!auctionDoc) {
+    return c.json({ ok: false, error: 'Auction not found' }, 404)
+  }
+
+  const currentRound = await Rounds.findOne({
+    auction_id: auctionDoc._id,
+    round_number: auctionDoc.current_round,
+    status: 'active',
+  }).lean()
+
+  const prevTopUserIds: number[] = []
+  if (currentRound) {
+    const prevBids = await Bids.find({ round_id: currentRound._id, status: 'active' }).lean()
+    const prevRanked = rankBids(prevBids.map((b) => ({ ...b, amount: b.amount, amount_reached_at: b.amount_reached_at })))
+    prevTopUserIds.push(...prevRanked.slice(0, currentRound.items_count).map((b) => b.user_id))
+  }
+
   type PlaceBidTxResult = {
     bid: BidDoc
     round: RoundDoc
@@ -810,6 +829,16 @@ auctions.post('/:id/bid', async (c) => {
       rank: txResult.bidRank,
       is_anonymous: user.is_anonymous,
     }, leaderboard)
+
+    const newTopUserIds = leaderboard.filter((e) => e.is_winner).map((e) => e.user_id)
+    const knockedOut = prevTopUserIds.filter((uid) => !newTopUserIds.includes(uid) && uid !== tgUser.id)
+
+    for (const userId of knockedOut) {
+      const userBid = leaderboard.find((e) => e.user_id === userId)
+      if (userBid) {
+        tgNotify.outbid(userId, userBid.amount, txResult.round.items_count, id, auctionDoc.auction_name)
+      }
+    }
   }
 
   if (txResult.extended) {

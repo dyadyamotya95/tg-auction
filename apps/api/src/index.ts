@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { createNodeWebSocket } from '@hono/node-ws'
 import { Hono } from 'hono'
 import { connectMongo } from '@tac/db'
-import { verifyTelegramInitData } from '@tac/telegram'
+import { verifyTelegramInitData, initTgNotify } from '@tac/telegram'
 import { config } from './config.js'
 import { createApp } from './app.js'
 import { addClient, removeClient } from './ws/auction-hub.js'
@@ -112,6 +112,8 @@ async function main(): Promise<void> {
   if (config.dev_mode) {
     console.log('⚠️  DEV_MODE enabled — auth validation disabled')
   }
+
+  initTgNotify(config.telegram.bot_token, config.webapp.url)
 
   if (config.mongo.uri) {
     try {
