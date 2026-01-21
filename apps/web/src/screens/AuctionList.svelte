@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { fly } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
   import { IconGavel, IconGift } from '@tabler/icons-svelte'
@@ -15,22 +15,37 @@
   let auctions: AuctionListItemDTO[] = []
   let loading = true
   let filter: 'all' | 'active' | 'completed' = 'all'
+  let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  async function load() {
-    loading = true
+  async function load(silent = false) {
+    if (!silent) {
+      loading = true
+    }
+
     const initData = getInitData()
     const status = filter === 'all' ? undefined : filter
     auctions = await apiGetAuctions(initData, status)
-    loading = false
+    if (!silent) {
+      loading = false
+    }
   }
 
-  onMount(load)
+  onMount(() => {
+    load()
+    pollTimer = setInterval(() => load(true), 1000)
+  })
+
+  onDestroy(() => {
+    if (pollTimer) {
+      clearInterval(pollTimer)
+    }
+  })
 
   function setFilter(f: typeof filter) {
     if (f === filter) return
     triggerSelectionChanged()
     filter = f
-    load()
+    load(false)
   }
 
   function formatBid(amount: string): string {

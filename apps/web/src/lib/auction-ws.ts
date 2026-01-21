@@ -1,3 +1,13 @@
+type LeaderboardEntry = {
+  rank: number
+  user_id: number
+  display_name: string
+  display_photo: string
+  is_anonymous: boolean
+  amount: string
+  is_winner: boolean
+}
+
 type BidEvent = {
   type: 'bid'
   bid: {
@@ -8,6 +18,7 @@ type BidEvent = {
     rank: number
     is_anonymous: boolean
   }
+  leaderboard: LeaderboardEntry[]
   ts: number
 }
 
