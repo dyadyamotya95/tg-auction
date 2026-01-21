@@ -308,17 +308,13 @@
   .live-badge {
     font-size: 10px;
     font-weight: 700;
+    letter-spacing: 0.5px;
     color: #fff;
-    background: #ff3b30;
-    padding: 2px 6px;
-    border-radius: 4px;
-    animation: pulse-live 1.5s ease-in-out infinite;
+    background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);
+    padding: 3px 7px;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(255, 59, 48, 0.35);
     flex-shrink: 0;
-  }
-
-  @keyframes pulse-live {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
   }
 
   .auction-meta {

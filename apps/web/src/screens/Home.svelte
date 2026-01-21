@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { fly, scale } from 'svelte/transition'
-  import { cubicOut, elasticOut } from 'svelte/easing'
+  import { fly, fade } from 'svelte/transition'
+  import { cubicOut } from 'svelte/easing'
   import { IconGavel, IconPlus, IconUser, IconGift, IconSnowflake, IconReceipt } from '@tabler/icons-svelte'
 
   import Avatar from '../components/Avatar.svelte'
@@ -182,7 +182,7 @@
       <h1 class="title">{tab === 'auctions' ? 'Аукционы' : 'Профиль'}</h1>
       <div class="header-right">
         {#if $walletView.hold > 0}
-          <div class="hold-badge" in:scale={{ duration: 200 }}>
+          <div class="hold-badge" in:fade={{ duration: 150 }}>
             <IconSnowflake size={14} />
             <span>{formatBalance($walletView.hold)}</span>
           </div>
@@ -196,11 +196,6 @@
           <span class="star">⭐</span>
           <span class="balance-value">{formatBalance(displayBalance)}</span>
         </button>
-        {#if tab === 'auctions'}
-          <button class="icon-btn" type="button" on:click={onCreateAuction}>
-            <IconPlus size={20} stroke={2} />
-          </button>
-        {/if}
       </div>
     </header>
 
@@ -277,7 +272,8 @@
         class="fab" 
         type="button" 
         on:click={onCreateAuction}
-        in:scale={{ duration: 300, delay: 200, easing: elasticOut }}
+        in:fly={{ y: 16, duration: 200 }}
+        out:fade={{ duration: 100 }}
       >
         <IconPlus size={20} stroke={2.5} />
         <span>Создать</span>
@@ -342,9 +338,9 @@
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
-    border-radius: 8px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
-    color: var(--tg-theme-hint-color, #999);
+    border-radius: 10px;
+    background: rgba(142, 142, 147, 0.12);
+    color: var(--tg-theme-hint-color, #8e8e93);
     font-size: 13px;
     font-weight: 500;
   }
@@ -352,24 +348,24 @@
   .balance-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 8px 14px;
     border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
-    color: var(--tg-theme-text-color, #000);
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ffcc00 0%, #ffaa00 100%);
+    color: #1c1c1e;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: transform 150ms ease, background 150ms ease;
+    box-shadow: 0 2px 8px rgba(255, 170, 0, 0.25);
+    transition: transform 150ms ease, box-shadow 150ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .balance-btn:active,
   .balance-btn.pressed {
-    transform: scale(1.02);
-    background: var(--tg-theme-button-color, #007aff);
-    color: #fff;
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(255, 170, 0, 0.35);
   }
 
   .balance-btn.maxed {
@@ -383,25 +379,6 @@
 
   .balance-value {
     font-variant-numeric: tabular-nums;
-  }
-
-  .icon-btn {
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
-    color: var(--tg-theme-button-color, #007aff);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 150ms ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .icon-btn:active {
-    transform: scale(0.95);
   }
 
   .body {
@@ -552,26 +529,27 @@
     left: 16px;
     right: 16px;
     bottom: 80px;
-    height: 48px;
+    height: 52px;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     font-weight: 600;
     font-size: 16px;
-    background: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #fff);
+    background: linear-gradient(135deg, #007aff 0%, #0055d4 100%);
+    color: #fff;
     cursor: pointer;
     z-index: 10;
-    transition: transform 150ms ease, opacity 150ms ease;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+    transition: transform 150ms ease, box-shadow 150ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .fab:active {
     transform: scale(0.98);
-    opacity: 0.9;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
   }
 
   .tabbar {
@@ -580,9 +558,11 @@
     right: 0;
     bottom: 0;
     display: flex;
-    padding: 8px 16px 16px;
+    padding: 6px 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
     background: var(--tg-theme-bg-color, #fff);
-    border-top: 0.5px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.1));
+    border-top: 0.5px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.08));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 
   .tab {
@@ -590,14 +570,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px;
+    gap: 3px;
+    padding: 6px;
     border: none;
     background: transparent;
-    color: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.4));
+    color: var(--tg-theme-hint-color, #8e8e93);
     cursor: pointer;
-    transition: color 150ms ease;
+    transition: color 150ms ease, transform 150ms ease;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .tab:active {
+    transform: scale(0.95);
   }
 
   .tab.active {
@@ -605,7 +589,8 @@
   }
 
   .tab span {
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
   }
 </style>
