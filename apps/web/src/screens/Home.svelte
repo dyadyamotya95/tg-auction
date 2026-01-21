@@ -78,7 +78,6 @@
     return n.toLocaleString('ru-RU')
   }
 
-  // Держим локальную анимацию, а данные берём из store.
   $: {
     const next = Math.min($walletView.available, MAX_BALANCE)
     if (lastAvailable === null) {

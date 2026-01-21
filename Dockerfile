@@ -1,19 +1,25 @@
-FROM node:24-bookworm-slim AS base
+FROM node:24-bookworm-slim
 
 WORKDIR /app
 
-# Install nginx for production web serving
 RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
-
-# Enable corepack so pnpm from packageManager field is used.
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY .npmrc ./.npmrc
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/bot/package.json ./apps/bot/
+COPY apps/web/package.json ./apps/web/
+COPY apps/worker/package.json ./apps/worker/
+COPY packages/core/package.json ./packages/core/
+COPY packages/db/package.json ./packages/db/
+COPY packages/env/package.json ./packages/env/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/telegram/package.json ./packages/telegram/
+
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 COPY apps ./apps
 COPY packages ./packages
-
-RUN pnpm install --frozen-lockfile
 
 ENV NODE_ENV=production
