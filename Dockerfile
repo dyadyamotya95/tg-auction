@@ -1,4 +1,4 @@
-FROM node:24-bookworm-slim
+FROM node:24-bookworm-slim AS base
 
 WORKDIR /app
 
@@ -23,3 +23,8 @@ COPY apps ./apps
 COPY packages ./packages
 
 ENV NODE_ENV=production
+
+FROM base AS web
+RUN pnpm --filter @tac/web build
+
+FROM base AS backend
