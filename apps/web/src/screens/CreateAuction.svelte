@@ -300,7 +300,7 @@
 <style>
   .create {
     min-height: 100vh;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--ios-bg);
     padding-bottom: 40px;
   }
 
@@ -308,35 +308,37 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 8px 16px;
     position: sticky;
     top: 0;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--ios-bg);
     z-index: 10;
   }
 
   header h1 {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
+    color: var(--ios-label);
   }
 
   .back-btn {
     width: 40px;
     height: 40px;
     border: none;
-    border-radius: 10px;
+    border-radius: 20px;
     background: transparent;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--ios-blue);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s ease;
   }
 
   .back-btn:active {
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
+    opacity: 0.5;
   }
 
   .spacer {
@@ -355,19 +357,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    padding: 28px 24px;
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
   }
 
   .avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+    width: 72px;
+    height: 72px;
+    border-radius: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     transition: transform 200ms ease, opacity 200ms ease;
   }
 
@@ -377,9 +379,9 @@
   }
 
   .name {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--ios-label);
     transition: opacity 200ms ease;
   }
 
@@ -394,18 +396,19 @@
     width: 36px;
     height: 36px;
     border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-hint-color, #999);
+    border-radius: 18px;
+    background: var(--ios-fill-tertiary);
+    color: var(--ios-gray);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease;
   }
 
   .randomize-btn:active {
-    color: var(--tg-theme-button-color, #007aff);
+    color: var(--ios-blue);
   }
 
   .randomize-btn.spinning {
@@ -417,18 +420,18 @@
   }
 
   .card {
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
   }
 
   .card-title {
     font-size: 13px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #999);
+    font-weight: 600;
+    color: var(--ios-gray);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -440,8 +443,8 @@
   }
 
   .row > span {
-    font-size: 15px;
-    color: var(--tg-theme-text-color, #000);
+    font-size: 17px;
+    color: var(--ios-label);
   }
 
   .row.total {
@@ -451,112 +454,122 @@
 
   .total-value {
     font-size: 17px;
-    font-weight: 700;
-    color: var(--tg-theme-button-color, #007aff);
+    font-weight: 600;
+    color: var(--ios-blue);
   }
 
   .divider {
-    height: 1px;
-    background: var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.1));
-    margin: 4px 0;
+    height: 0.5px;
+    background: var(--ios-separator);
+    margin: 2px 0;
   }
 
   .stepper {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0;
+    background: var(--ios-fill-tertiary);
+    border-radius: 8px;
+    overflow: hidden;
   }
 
   .stepper button {
-    width: 32px;
+    width: 36px;
     height: 32px;
     border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-button-color, #007aff);
-    color: #fff;
-    font-size: 18px;
+    background: transparent;
+    color: var(--ios-blue);
+    font-size: 20px;
+    font-weight: 400;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
   }
 
   .stepper button:active {
-    opacity: 0.8;
+    background: var(--ios-fill-secondary);
   }
 
   .stepper span {
-    min-width: 60px;
+    min-width: 56px;
     text-align: center;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--ios-label);
   }
 
   .stepper input {
-    width: 60px;
+    width: 56px;
     text-align: center;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     border: none;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    border-radius: 6px;
-    padding: 4px 8px;
+    background: transparent;
+    color: var(--ios-label);
+    padding: 4px 0;
   }
 
   .input-wrap {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--ios-fill-tertiary);
     padding: 8px 12px;
     border-radius: 8px;
   }
 
   .input-wrap input {
-    width: 60px;
+    width: 56px;
     border: none;
     background: transparent;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     text-align: right;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--ios-label);
   }
 
   .unit {
     font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--ios-gray);
   }
 
   .value-muted {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #999);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ios-gray);
   }
 
   .options {
     display: flex;
-    gap: 8px;
+    padding: 2px;
+    background: var(--ios-fill-tertiary);
+    border-radius: 9px;
   }
 
   .option {
     flex: 1;
-    padding: 10px;
+    padding: 8px 12px;
     border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--ios-label);
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 150ms ease, color 150ms ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .option.active {
-    background: var(--tg-theme-button-color, #007aff);
-    color: #fff;
+    background: var(--ios-bg-elevated);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  :global(:root.dark) .option.active {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   }
 
   .datetime {
@@ -564,40 +577,43 @@
     padding: 12px;
     border: none;
     border-radius: 8px;
-    background: var(--tg-theme-bg-color, #fff);
-    font-size: 15px;
-    color: var(--tg-theme-text-color, #000);
+    background: var(--ios-fill-tertiary);
+    font-size: 17px;
+    color: var(--ios-label);
   }
 
   .error {
-    padding: 12px;
-    background: rgba(255, 59, 48, 0.1);
-    color: #ff3b30;
+    padding: 12px 16px;
+    background: rgba(255, 69, 58, 0.12);
+    color: var(--ios-red);
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 15px;
     text-align: center;
+  }
+
+  :global(:root:not(.dark)) .error {
+    background: rgba(255, 59, 48, 0.12);
   }
 
   .submit-btn {
     padding: 16px;
     border: none;
     border-radius: 12px;
-    background: var(--tg-theme-button-color, #007aff);
+    background: var(--ios-blue);
     color: #fff;
     font-size: 17px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 150ms ease, opacity 150ms ease;
+    transition: opacity 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .submit-btn:active:not(:disabled) {
-    transform: scale(0.98);
-    opacity: 0.9;
+    opacity: 0.7;
   }
 
   .submit-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
   }
 
   .dots {
@@ -609,7 +625,7 @@
   .dots span {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: 3px;
     background: currentColor;
     animation: bounce 1.4s infinite ease-in-out both;
   }

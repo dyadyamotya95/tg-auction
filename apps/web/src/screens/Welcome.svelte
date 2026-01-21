@@ -113,7 +113,7 @@
     display: flex;
     flex-direction: column;
     padding: 24px 20px;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--ios-bg);
   }
 
   .content {
@@ -125,25 +125,25 @@
   }
 
   .hero {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   .title {
     margin: 0 0 8px;
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #999);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ios-gray);
     letter-spacing: -0.02em;
     text-align: center;
-    color: var(--tg-theme-text-color, #000);
   }
 
   .name {
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
-    margin-bottom: 32px;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--ios-label);
+    margin-bottom: 40px;
     transition: opacity 200ms ease;
+    letter-spacing: -0.5px;
   }
 
   .name.transitioning {
@@ -159,9 +159,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
-    border-radius: 14px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--ios-bg-secondary);
   }
 
   .toggle-info {
@@ -171,21 +171,21 @@
   }
 
   .toggle-label {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ios-label);
   }
 
   .toggle-hint {
     font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--ios-gray);
   }
 
   .note {
     margin: 12px 0 0;
     text-align: center;
     font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    color: var(--ios-gray);
   }
 
   .error {
@@ -194,13 +194,17 @@
     margin-top: 16px;
     padding: 12px 16px;
     border-radius: 12px;
-    background: rgba(255, 59, 48, 0.1);
-    color: var(--tg-theme-destructive-text-color, #ff3b30);
-    font-size: 14px;
+    background: rgba(255, 69, 58, 0.12);
+    color: var(--ios-red);
+    font-size: 15px;
+  }
+
+  :global(:root:not(.dark)) .error {
+    background: rgba(255, 59, 48, 0.12);
   }
 
   .bottom {
-    padding-top: 16px;
+    padding-top: 20px;
   }
 
   .primary-btn {
@@ -210,16 +214,15 @@
     border-radius: 12px;
     font-size: 17px;
     font-weight: 600;
-    color: var(--tg-theme-button-text-color, #fff);
-    background: var(--tg-theme-button-color, #007aff);
+    color: #fff;
+    background: var(--ios-blue);
     cursor: pointer;
-    transition: opacity 150ms ease, transform 150ms ease;
+    transition: opacity 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .primary-btn:active:not(:disabled) {
-    transform: scale(0.98);
-    opacity: 0.9;
+    opacity: 0.7;
   }
 
   .primary-btn:disabled {

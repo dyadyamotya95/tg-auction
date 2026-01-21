@@ -29,21 +29,21 @@
 
 <style>
   .toggle {
-    width: 50px;
-    height: 30px;
-    border-radius: 15px;
+    width: 51px;
+    height: 31px;
+    border-radius: 16px;
     padding: 2px;
     border: none;
-    background: rgba(0, 0, 0, 0.15);
+    background: var(--ios-fill);
     display: flex;
     align-items: center;
     cursor: pointer;
-    transition: background 200ms ease;
+    transition: background 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .toggle.on {
-    background: #34c759;
+    background: var(--ios-green);
   }
 
   .toggle:disabled {
@@ -52,12 +52,12 @@
   }
 
   .knob {
-    width: 26px;
-    height: 26px;
-    border-radius: 13px;
+    width: 27px;
+    height: 27px;
+    border-radius: 14px;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-    transition: transform 200ms ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease;
   }
 
   .toggle.on .knob {

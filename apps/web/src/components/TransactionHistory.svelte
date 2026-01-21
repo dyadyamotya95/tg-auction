@@ -41,51 +41,57 @@
   }
 
   function getEntryMeta(type: LedgerEntryDTO['type']): EntryMeta {
+    const isDark = document.documentElement.classList.contains('dark')
+    const green = isDark ? '#30D158' : '#34C759'
+    const blue = isDark ? '#0A84FF' : '#007AFF'
+    const orange = isDark ? '#FF9F0A' : '#FF9500'
+    const gray = '#8E8E93'
+
     switch (type) {
       case 'deposit':
         return {
           icon: IconPlus,
-          color: '#34c759',
-          bg: 'rgba(52, 199, 89, 0.12)',
+          color: green,
+          bg: isDark ? 'rgba(48, 209, 88, 0.15)' : 'rgba(52, 199, 89, 0.12)',
           label: 'Пополнение',
           sign: '+',
         }
       case 'hold':
         return {
           icon: IconSnowflake,
-          color: '#007aff',
-          bg: 'rgba(0, 122, 255, 0.12)',
+          color: blue,
+          bg: isDark ? 'rgba(10, 132, 255, 0.15)' : 'rgba(0, 122, 255, 0.12)',
           label: 'Заморозка',
           sign: '-',
         }
       case 'release':
         return {
           icon: IconSnowflakeOff,
-          color: '#34c759',
-          bg: 'rgba(52, 199, 89, 0.12)',
+          color: green,
+          bg: isDark ? 'rgba(48, 209, 88, 0.15)' : 'rgba(52, 199, 89, 0.12)',
           label: 'Разморозка',
           sign: '+',
         }
       case 'capture':
         return {
           icon: IconGift,
-          color: '#ff9500',
-          bg: 'rgba(255, 149, 0, 0.12)',
+          color: orange,
+          bg: isDark ? 'rgba(255, 159, 10, 0.15)' : 'rgba(255, 149, 0, 0.12)',
           label: 'Покупка',
           sign: '-',
         }
       case 'refund':
         return {
           icon: IconArrowBack,
-          color: '#34c759',
-          bg: 'rgba(52, 199, 89, 0.12)',
+          color: green,
+          bg: isDark ? 'rgba(48, 209, 88, 0.15)' : 'rgba(52, 199, 89, 0.12)',
           label: 'Возврат',
           sign: '+',
         }
       default:
         return {
           icon: IconReceipt,
-          color: '#8e8e93',
+          color: gray,
           bg: 'rgba(142, 142, 147, 0.12)',
           label: 'Операция',
           sign: '',
@@ -197,7 +203,7 @@
                   <span class="entry-time">{formatTime(entry.created_at)}</span>
                 {/if}
               </div>
-              <div class="entry-amount" style="color: {meta.sign === '+' ? '#34c759' : meta.sign === '-' ? 'var(--tg-theme-text-color, #000)' : '#8e8e93'}">
+              <div class="entry-amount" class:positive={meta.sign === '+'} class:negative={meta.sign === '-'}>
                 <span class="star">⭐</span>
                 <span>{formatAmount(entry.amount, meta.sign)}</span>
               </div>
@@ -219,8 +225,7 @@
   .loading {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -229,20 +234,24 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
-    animation: pulse 1s ease-in-out infinite;
+    padding: 12px 16px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .skeleton-item:not(:last-child) {
+    border-bottom: 0.5px solid var(--ios-separator);
   }
 
   @keyframes pulse {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.4; }
   }
 
   .skeleton-icon {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    border-radius: 8px;
+    background: var(--ios-fill);
   }
 
   .skeleton-content {
@@ -256,21 +265,21 @@
     width: 80px;
     height: 14px;
     border-radius: 4px;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    background: var(--ios-fill);
   }
 
   .skeleton-sub {
     width: 60px;
     height: 10px;
     border-radius: 4px;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.08));
+    background: var(--ios-fill-secondary);
   }
 
   .skeleton-amount {
     width: 50px;
     height: 16px;
     border-radius: 4px;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    background: var(--ios-fill);
   }
 
   .empty {
@@ -278,31 +287,36 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding: 32px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    padding: 40px 20px;
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
+    color: var(--ios-gray);
+    font-size: 15px;
   }
 
   .error {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px;
-    color: var(--tg-theme-hint-color, #999);
+    padding: 40px 20px;
+    color: var(--ios-gray);
   }
 
   .error button {
-    margin-top: 12px;
-    padding: 10px 20px;
+    margin-top: 16px;
+    padding: 10px 24px;
     border: none;
     border-radius: 8px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
-    color: var(--tg-theme-button-color, #007aff);
-    font-size: 14px;
+    background: var(--ios-fill-secondary);
+    color: var(--ios-blue);
+    font-size: 15px;
     font-weight: 500;
     cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .error button:active {
+    opacity: 0.7;
   }
 
   .group {
@@ -313,8 +327,8 @@
 
   .group-header {
     font-size: 13px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #999);
+    font-weight: 600;
+    color: var(--ios-gray);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 0 4px;
@@ -323,7 +337,7 @@
   .group-list {
     display: flex;
     flex-direction: column;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -332,7 +346,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
+    padding: 12px 16px;
     animation: fade-in 200ms ease backwards;
   }
 
@@ -344,13 +358,13 @@
   }
 
   .entry:not(:last-child) {
-    border-bottom: 0.5px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.08));
+    border-bottom: 0.5px solid var(--ios-separator);
   }
 
   .entry-icon {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -366,34 +380,43 @@
   }
 
   .entry-label {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ios-label);
   }
 
   .entry-note {
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    font-size: 15px;
+    color: var(--ios-gray);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .entry-time {
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    font-size: 15px;
+    color: var(--ios-gray);
   }
 
   .entry-amount {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
+    color: var(--ios-gray);
+  }
+
+  .entry-amount.positive {
+    color: var(--ios-green);
+  }
+
+  .entry-amount.negative {
+    color: var(--ios-label);
   }
 
   .star {
-    font-size: 12px;
+    font-size: 13px;
   }
 </style>

@@ -151,33 +151,38 @@
 
   .filters {
     display: flex;
-    gap: 8px;
+    padding: 2px;
+    background: var(--ios-fill-tertiary);
+    border-radius: 9px;
   }
 
   .filter-btn {
     flex: 1;
-    padding: 10px;
+    padding: 8px 12px;
     border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--ios-label);
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 150ms ease, color 150ms ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .filter-btn.active {
-    background: var(--tg-theme-button-color, #007aff);
-    color: #fff;
+    background: var(--ios-bg-elevated);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  :global(:root.dark) .filter-btn.active {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   }
 
   .loading {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -186,20 +191,24 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
-    animation: pulse 1s ease-in-out infinite;
+    padding: 12px 16px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .skeleton-item:not(:last-child) {
+    border-bottom: 0.5px solid var(--ios-separator);
   }
 
   @keyframes pulse {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.4; }
   }
 
   .skeleton-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: var(--ios-fill);
   }
 
   .skeleton-content {
@@ -211,60 +220,59 @@
 
   .skeleton-title {
     width: 120px;
-    height: 16px;
+    height: 14px;
     border-radius: 4px;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    background: var(--ios-fill);
   }
 
   .skeleton-meta {
     width: 80px;
     height: 12px;
     border-radius: 4px;
-    background: var(--tg-theme-hint-color, rgba(0, 0, 0, 0.08));
+    background: var(--ios-fill-secondary);
   }
 
   .empty {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 48px 20px;
-    color: var(--tg-theme-hint-color, #999);
+    padding: 60px 20px;
+    color: var(--ios-gray);
   }
 
   .empty-title {
-    margin: 12px 0 4px;
-    font-size: 17px;
+    margin: 16px 0 4px;
+    font-size: 20px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--ios-label);
   }
 
   .empty-text {
-    margin: 0 0 20px;
-    font-size: 14px;
+    margin: 0 0 24px;
+    font-size: 15px;
   }
 
   .empty-btn {
-    padding: 12px 24px;
+    padding: 12px 32px;
     border: none;
-    border-radius: 10px;
-    background: var(--tg-theme-button-color, #007aff);
+    border-radius: 12px;
+    background: var(--ios-blue);
     color: #fff;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 150ms ease;
+    transition: opacity 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .empty-btn:active {
-    transform: scale(0.97);
+    opacity: 0.7;
   }
 
   .list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -273,24 +281,28 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
+    padding: 12px 16px;
     background: transparent;
     border: none;
     text-align: left;
     cursor: pointer;
-    transition: background 150ms ease;
+    transition: background 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
+  .auction-item:not(:last-child) {
+    border-bottom: 0.5px solid var(--ios-separator);
+  }
+
   .auction-item:active {
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--ios-fill-tertiary);
   }
 
   .auction-avatar {
     position: relative;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -302,7 +314,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
 
   .auction-top {
@@ -312,9 +324,9 @@
   }
 
   .auction-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ios-label);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -322,13 +334,13 @@
 
   .live-badge {
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
     color: #fff;
-    background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);
-    padding: 3px 7px;
-    border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(255, 59, 48, 0.35);
+    background: var(--ios-red);
+    padding: 2px 6px;
+    border-radius: 4px;
     flex-shrink: 0;
   }
 
@@ -336,8 +348,8 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    font-size: 15px;
+    color: var(--ios-gray);
   }
 
   .dot {
@@ -349,8 +361,8 @@
     align-items: center;
     gap: 4px;
     font-size: 15px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
+    font-weight: 500;
+    color: var(--ios-label);
   }
 
   .star {

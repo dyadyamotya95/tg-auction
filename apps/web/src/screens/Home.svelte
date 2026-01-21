@@ -305,25 +305,26 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--ios-bg);
   }
 
   .top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 12px 16px;
     position: sticky;
     top: 0;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--ios-bg);
     z-index: 10;
   }
 
   .title {
     margin: 0;
-    font-size: 20px;
+    font-size: 28px;
     font-weight: 700;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--ios-label);
+    letter-spacing: -0.5px;
   }
 
   .header-right {
@@ -337,9 +338,9 @@
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
-    border-radius: 10px;
-    background: rgba(142, 142, 147, 0.12);
-    color: var(--tg-theme-hint-color, #8e8e93);
+    border-radius: 8px;
+    background: var(--ios-fill-tertiary);
+    color: var(--ios-gray);
     font-size: 13px;
     font-weight: 500;
   }
@@ -347,33 +348,32 @@
   .balance-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
+    gap: 5px;
+    padding: 7px 12px;
     border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #ffcc00 0%, #ffaa00 100%);
-    color: #1c1c1e;
+    border-radius: 8px;
+    background: var(--ios-fill-secondary);
+    color: var(--ios-label);
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(255, 170, 0, 0.25);
-    transition: transform 150ms ease, box-shadow 150ms ease;
+    transition: background 0.15s ease, transform 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .balance-btn:active,
   .balance-btn.pressed {
-    transform: scale(1.03);
-    box-shadow: 0 4px 12px rgba(255, 170, 0, 0.35);
+    background: var(--ios-fill);
+    transform: scale(0.97);
   }
 
   .balance-btn.maxed {
-    opacity: 0.6;
+    opacity: 0.5;
     pointer-events: none;
   }
 
   .star {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .balance-value {
@@ -382,13 +382,13 @@
 
   .body {
     flex: 1;
-    padding: 0 16px 140px;
+    padding: 0 16px 100px;
   }
 
   .profile {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
 
   .profile-header {
@@ -396,13 +396,13 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    padding: 16px 0;
+    padding: 20px 0;
   }
 
   .profile-name {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--ios-label);
     transition: opacity 200ms ease;
   }
 
@@ -411,7 +411,7 @@
   }
 
   .settings-card {
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -420,27 +420,27 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
+    padding: 12px 16px;
   }
 
   .setting-label {
-    font-size: 16px;
-    color: var(--tg-theme-text-color, #000);
+    font-size: 17px;
+    color: var(--ios-label);
   }
 
   .section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .section-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #999);
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-gray);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 0 4px;
@@ -449,8 +449,9 @@
   .section-count {
     padding: 2px 6px;
     border-radius: 4px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
+    background: var(--ios-fill-tertiary);
     font-size: 12px;
+    color: var(--ios-gray);
   }
 
   .empty-card {
@@ -458,18 +459,17 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding: 32px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    padding: 40px 20px;
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
+    color: var(--ios-gray);
+    font-size: 15px;
   }
 
   .gifts-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    background: var(--ios-bg-secondary);
     border-radius: 12px;
     overflow: hidden;
   }
@@ -478,14 +478,18 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
+    padding: 12px 16px;
     background: transparent;
     border: none;
     text-align: left;
     cursor: pointer;
-    transition: background 150ms ease;
+    transition: background 0.15s ease;
     -webkit-tap-highlight-color: transparent;
     animation: fade-in 200ms ease backwards;
+  }
+
+  .gift-item:not(:last-child) {
+    border-bottom: 0.5px solid var(--ios-separator);
   }
 
   @keyframes fade-in {
@@ -493,12 +497,12 @@
   }
 
   .gift-item:active {
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--ios-fill-tertiary);
   }
 
   .gift-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -513,42 +517,43 @@
   }
 
   .gift-name {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ios-label);
   }
 
   .gift-number {
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #999);
+    font-size: 15px;
+    color: var(--ios-gray);
   }
 
   .fab {
     position: fixed;
-    left: 16px;
     right: 16px;
-    bottom: 80px;
-    height: 52px;
+    bottom: 90px;
+    width: 56px;
+    height: 56px;
     border: none;
-    border-radius: 14px;
+    border-radius: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 16px;
-    background: linear-gradient(135deg, #007aff 0%, #0055d4 100%);
+    background: var(--ios-blue);
     color: #fff;
     cursor: pointer;
     z-index: 10;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
-    transition: transform 150ms ease, box-shadow 150ms ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
+  .fab span {
+    display: none;
+  }
+
   .fab:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+    transform: scale(0.92);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   .tabbar {
@@ -557,11 +562,20 @@
     right: 0;
     bottom: 0;
     display: flex;
-    padding: 6px 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
-    background: var(--tg-theme-bg-color, #fff);
-    border-top: 0.5px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.08));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 6px);
+    background: rgba(var(--ios-bg), 0.72);
+    background: color-mix(in srgb, var(--ios-bg) 72%, transparent);
+    border-top: 0.5px solid var(--ios-separator);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  :global(:root:not(.dark)) .tabbar {
+    background: rgba(249, 249, 249, 0.94);
+  }
+
+  :global(:root.dark) .tabbar {
+    background: rgba(22, 22, 22, 0.9);
   }
 
   .tab {
@@ -569,27 +583,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 6px;
+    gap: 2px;
+    padding: 4px;
     border: none;
     background: transparent;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--ios-gray);
     cursor: pointer;
-    transition: color 150ms ease, transform 150ms ease;
+    transition: color 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .tab:active {
-    transform: scale(0.95);
+    opacity: 0.6;
   }
 
   .tab.active {
-    color: var(--tg-theme-button-color, #007aff);
+    color: var(--ios-blue);
   }
 
   .tab span {
     font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+    font-weight: 500;
   }
 </style>
