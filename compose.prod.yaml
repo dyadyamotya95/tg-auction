@@ -1,6 +1,8 @@
 services:
   nginx-proxy:
     image: nginxproxy/nginx-proxy:alpine
+    labels:
+      - com.github.nginx-proxy.nginx
     ports:
       - '80:80'
       - '443:443'
@@ -20,6 +22,7 @@ services:
       - nginx-certs:/etc/nginx/certs:rw
       - nginx-vhost:/etc/nginx/vhost.d
       - nginx-html:/usr/share/nginx/html
+      - nginx-acme:/etc/acme.sh
     depends_on:
       - nginx-proxy
     restart: unless-stopped
@@ -70,6 +73,8 @@ services:
 
   web:
     build: .
+    depends_on:
+      - api
     command:
       - sh
       - -lc
@@ -120,3 +125,4 @@ volumes:
   nginx-certs: {}
   nginx-vhost: {}
   nginx-html: {}
+  nginx-acme: {}
