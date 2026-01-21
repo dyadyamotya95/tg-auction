@@ -188,7 +188,7 @@ ${c.cyan}${c.bold}                    🔥 777 bots × 5 rounds × chaos 🔥${c
   log('📦', 'Creating auction...')
   const createRes = await api('POST', '/auctions', CREATOR_ID, {
     auction_name: `Load Test ${new Date().toISOString()}`,
-    auction_photo: 'https://example.com/load.png',
+    auction_photo: 'g03',
     rounds_count: ROUNDS_COUNT,
     items_per_round: ITEMS_PER_ROUND,
     first_round_minutes: ROUND_MINUTES,
@@ -470,7 +470,7 @@ async function rpsTest() {
   log('🎯', 'Creating auction...')
   const auctionRes = await api('POST', '/auctions', RPS_CREATOR_ID, {
     auction_name: 'RPS Stress Test',
-    auction_photo: '🚀',
+    auction_photo: 'g12',
     rounds_count: 1,
     items_per_round: 100,
     first_round_minutes: 10,

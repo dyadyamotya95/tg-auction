@@ -16,7 +16,9 @@ type NotifyOptions = {
 }
 
 async function send(userId: number, text: string, options?: NotifyOptions) {
-  if (!bot) return
+  if (!bot) {
+    return
+  }
 
   const keyboard =
     options?.buttonText && options?.buttonPath
@@ -37,14 +39,14 @@ async function send(userId: number, text: string, options?: NotifyOptions) {
 
 export const tgNotify = {
   win(userId: number, giftNumber: number, auctionName: string) {
-    return send(userId, `🏆 Вы выиграли Gift #${giftNumber} в аукционе «${auctionName}»!`, {
+    return send(userId, `Вы выиграли Gift #${giftNumber} в аукционе «${auctionName}»!`, {
       buttonText: 'Открыть профиль',
       buttonPath: '/profile',
     })
   },
 
   refund(userId: number, amount: string, auctionName: string) {
-    return send(userId, `💸 Аукцион «${auctionName}» завершён. Ваша ставка ${amount} ⭐️ возвращена.`, {
+    return send(userId, `Аукцион «${auctionName}» завершён. Ваша ставка ${amount} возвращена.`, {
       buttonText: 'Аукционы',
       buttonPath: '/',
     })
@@ -53,7 +55,7 @@ export const tgNotify = {
   transferred(userId: number, fromRound: number, toRound: number, auctionId: string, auctionName: string) {
     return send(
       userId,
-      `🔄 Раунд ${fromRound} завершён! Вы переходите в раунд ${toRound} аукциона «${auctionName}».`,
+      `Раунд ${fromRound} завершён! Вы переходите в раунд ${toRound} аукциона «${auctionName}».`,
       {
         buttonText: 'Открыть аукцион',
         buttonPath: `/auction/${auctionId}`,
@@ -62,7 +64,7 @@ export const tgNotify = {
   },
 
   outbid(userId: number, amount: string, itemsCount: number, auctionId: string, auctionName: string) {
-    return send(userId, `⬇️ Вас перебили! Вы вне топ-${itemsCount} в «${auctionName}».\nВаша ставка: ${amount} ⭐️`, {
+    return send(userId, `Вас перебили! Вы вне топ-${itemsCount} в «${auctionName}».\nВаша ставка: ${amount}`, {
       buttonText: 'Поднять ставку',
       buttonPath: `/auction/${auctionId}`,
     })

@@ -1,7 +1,7 @@
 {
-  "name": "telegram-auction-clone",
+  "name": "tg-auction",
   "version": "1.0.0",
-  "description": "telegram auction clone (tac)",
+  "description": "Copy of Telegram Auctions. Builded for Crypto Bot contest.",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -22,13 +22,14 @@
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "load-test": "tsx scripts/load-test.ts",
+    "demo": "tsx scripts/demo-auction.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },
   "keywords": [],
-  "author": "",
+  "author": "Motya (https://t.me/dyadyamotya95)",
   "license": "ISC",
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
