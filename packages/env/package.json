@@ -1,0 +1,12 @@
+{
+  "name": "@tac/env",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

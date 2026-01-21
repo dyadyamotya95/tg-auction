@@ -1,0 +1,12 @@
+{
+  "name": "@tac/db",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "dependencies": {
+    "mongoose": "^8.19.0"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

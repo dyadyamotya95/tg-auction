@@ -1,0 +1,42 @@
+{
+  "name": "telegram-auction-clone",
+  "version": "1.0.0",
+  "description": "telegram auction clone (tac)",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "mongodb-memory-server"
+    ]
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --if-present dev",
+    "dev:api": "pnpm -F @tac/api dev",
+    "dev:web": "pnpm -F @tac/web dev",
+    "dev:bot": "pnpm -F @tac/bot dev",
+    "dev:worker": "pnpm -F @tac/worker dev",
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
+    "load-test": "tsx scripts/load-test.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.27.0",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
+    "prettier-plugin-svelte": "^3.4.1",
+    "tsx": "^4.21.0",
+    "typescript-eslint": "^8.52.0"
+  }
+}

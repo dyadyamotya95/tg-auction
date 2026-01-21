@@ -1,0 +1,10 @@
+node_modules
+.pnpm-store
+dist
+coverage
+.git
+.idea
+.vscode
+.env
+.env.*
+pnpm-lock.yaml

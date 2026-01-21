@@ -1,0 +1,122 @@
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginx-certs:/etc/nginx/certs:rw
+      - nginx-vhost:/etc/nginx/vhost.d
+      - nginx-html:/usr/share/nginx/html
+    restart: unless-stopped
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    environment:
+      DEFAULT_EMAIL: ${LETSENCRYPT_EMAIL}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx-certs:/etc/nginx/certs:rw
+      - nginx-vhost:/etc/nginx/vhost.d
+      - nginx-html:/usr/share/nginx/html
+    depends_on:
+      - nginx-proxy
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  mongo-init:
+    image: mongo:8
+    depends_on:
+      - mongo
+    volumes:
+      - ./docker/mongo/init-replica.js:/init-replica.js:ro
+    command:
+      [
+        'sh',
+        '-lc',
+        'i=0; until mongosh --host mongo:27017 /init-replica.js; do i=$((i+1)); if [ "$i" -ge 60 ]; then exit 1; fi; echo "mongo-init: retry $i/60"; sleep 1; done',
+      ]
+    restart: 'no'
+
+  api:
+    build: .
+    depends_on:
+      - mongo-init
+    command: ['pnpm', '--filter', '@tac/api', 'start']
+    environment:
+      PORT: '3000'
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
+    expose:
+      - '3000'
+    restart: unless-stopped
+
+  worker:
+    build: .
+    depends_on:
+      - mongo-init
+    command: ['pnpm', '--filter', '@tac/worker', 'start']
+    environment:
+      MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
+      WORKER_INTERVAL_MS: ${WORKER_INTERVAL_MS:-100}
+    restart: unless-stopped
+
+  web:
+    build: .
+    command:
+      - sh
+      - -lc
+      - |
+        pnpm --filter @tac/web build
+        cat > /tmp/nginx.conf << 'NGINX'
+        events {}
+        http {
+          include /etc/nginx/mime.types;
+          server {
+            listen 80;
+            root /app/apps/web/dist;
+            
+            location / {
+              try_files $$uri $$uri/ /index.html;
+            }
+            
+            location /api {
+              proxy_pass http://api:3000;
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $$http_upgrade;
+              proxy_set_header Connection "upgrade";
+              proxy_set_header Host $$host;
+            }
+          }
+        }
+        NGINX
+        nginx -c /tmp/nginx.conf -g 'daemon off;'
+    environment:
+      VIRTUAL_HOST: ${DOMAIN}
+      VIRTUAL_PORT: '80'
+      LETSENCRYPT_HOST: ${DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    expose:
+      - '80'
+    restart: unless-stopped
+
+  bot:
+    build: .
+    command: ['pnpm', '--filter', '@tac/bot', 'start']
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      WEBAPP_URL: https://${DOMAIN}/
+    restart: unless-stopped
+
+volumes:
+  mongo-data: {}
+  nginx-certs: {}
+  nginx-vhost: {}
+  nginx-html: {}

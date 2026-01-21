@@ -1,0 +1,66 @@
+services:
+  mongo:
+    image: mongo:8
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-init:
+    image: mongo:8
+    depends_on:
+      - mongo
+    volumes:
+      - ./docker/mongo/init-replica.js:/init-replica.js:ro
+    command:
+      [
+        'sh',
+        '-lc',
+        'i=0; until mongosh --host mongo:27017 /init-replica.js; do i=$((i+1)); if [ "$i" -ge 60 ]; then exit 1; fi; echo "mongo-init: retry $i/60"; sleep 1; done',
+      ]
+    restart: 'no'
+
+  api:
+    build: .
+    depends_on:
+      - mongo-init
+    command: ['pnpm', '--filter', '@tac/api', 'start']
+    environment:
+      PORT: '3000'
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
+    ports:
+      - '3000:3000'
+
+  worker:
+    build: .
+    depends_on:
+      - mongo-init
+    command: ['pnpm', '--filter', '@tac/worker', 'start']
+    environment:
+      MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
+      WORKER_INTERVAL_MS: ${WORKER_INTERVAL_MS:-100}
+
+  web:
+    build: .
+    command:
+      - sh
+      - -lc
+      - pnpm --filter @tac/web build && pnpm --filter @tac/web preview --host 0.0.0.0 --port 5173
+    environment:
+      PORT: '5173'
+      VITE_API_BASE_URL: http://localhost:3000
+    ports:
+      - '5173:5173'
+
+  bot:
+    build: .
+    command: ['pnpm', '--filter', '@tac/bot', 'start']
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      WEBAPP_URL: ${WEBAPP_URL:-https://tg-auction-clone.online/}
+    restart: unless-stopped
+
+volumes:
+  mongo-data: {}

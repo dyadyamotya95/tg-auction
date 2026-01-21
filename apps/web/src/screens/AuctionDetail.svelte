@@ -1,0 +1,1085 @@
+<script lang="ts">
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte'
+  import { fly, scale, fade } from 'svelte/transition'
+  import { cubicOut } from 'svelte/easing'
+  import { IconChevronLeft, IconGavel, IconClock, IconTrophy } from '@tabler/icons-svelte'
+  import type { AuctionDTO, RoundDTO, BidDTO, BidLeaderboardItemDTO } from '@tac/shared'
+  import {
+    apiGetAuction,
+    apiGetAuctionRound,
+    apiGetLeaderboard,
+    apiPlaceBid,
+    apiStartAuction,
+  } from '../lib/api'
+  import { getInitData } from '../lib/init-data'
+  import { triggerHaptic, triggerSliderTick, triggerSuccessPattern, triggerErrorPattern } from '../lib/haptic'
+  import { AuctionWebSocket } from '../lib/auction-ws'
+  import { parseAnonPhoto, getAnimalIconComponent } from '../lib/anon'
+  import { parseAuctionPhoto } from '../lib/auction-avatar'
+  import { walletStore, walletView } from '../lib/wallet-store'
+
+  export let auctionId: string
+  export let userId: number = 0
+
+  const dispatch = createEventDispatcher<{ back: void }>()
+
+  let auction: AuctionDTO | null = null
+  let round: RoundDTO | null = null
+  let leaderboard: BidLeaderboardItemDTO[] = []
+  let myBid: BidDTO | null = null
+  let loading = true
+  let error = ''
+  let bidError = ''
+
+  let bidAmount = ''
+  let sliderValue = 0
+  let prevSliderValue = 0
+  let bidding = false
+  let showCustomInput = false
+  let customBidValue = ''
+
+  let timeLeft = ''
+  let timer: ReturnType<typeof setInterval> | null = null
+  let ws: AuctionWebSocket | null = null
+  let startLeft = ''
+  let lastRoundPollAt = 0
+  let lastStartPollAt = 0
+
+  let balanceAnimating = false
+  let balancePressed = false
+  let displayBalance = 0
+  let lastAvailable: number | null = null
+  const MAX_BALANCE = 100000
+  const DEPOSIT_AMOUNT = 1000
+
+  $: {
+    const next = Math.min($walletView.available, MAX_BALANCE)
+    if (lastAvailable === null) {
+      displayBalance = next
+      lastAvailable = next
+    } else if (next !== lastAvailable && !balanceAnimating) {
+      animateBalance(displayBalance, next)
+      lastAvailable = next
+    }
+  }
+
+  async function load(opts: { silent?: boolean } = {}) {
+    if (!opts.silent) loading = true
+    error = ''
+    try {
+      const initData = getInitData()
+      auction = await apiGetAuction(initData, auctionId)
+      await walletStore.ensure()
+
+      if (auction.status === 'active') {
+        round = await apiGetAuctionRound(initData, auctionId)
+        const lb = await apiGetLeaderboard(initData, auctionId)
+        leaderboard = lb.leaderboard
+        myBid = lb.my_bid || null
+        connectWs()
+        
+        const minBid = Math.ceil(parseFloat(auction.min_bid))
+        const currentBid = myBid ? Math.floor(parseFloat(myBid.amount)) : 0
+        const startBid = currentBid > 0 ? currentBid + Math.ceil(parseFloat(auction.bid_step)) : minBid
+        bidAmount = String(startBid)
+        sliderValue = 0
+      } else {
+        round = null
+        leaderboard = []
+        myBid = null
+        ws?.disconnect()
+        ws = null
+      }
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Ошибка загрузки'
+    } finally {
+      if (!opts.silent) loading = false
+    }
+  }
+
+  async function depositBalance() {
+    if ($walletView.available >= MAX_BALANCE || balanceAnimating) return
+    
+    triggerHaptic('medium')
+    balancePressed = true
+    setTimeout(() => { balancePressed = false }, 150)
+
+    try {
+      await walletStore.deposit(DEPOSIT_AMOUNT)
+    } catch {}
+  }
+
+  function animateBalance(from: number, to: number) {
+    balanceAnimating = true
+    const duration = 200
+    const steps = 10
+    const stepTime = duration / steps
+    const increment = (to - from) / steps
+    let current = from
+    let step = 0
+
+    const interval = setInterval(() => {
+      step++
+      current += increment
+      displayBalance = Math.round(current)
+      
+      if (step >= steps) {
+        clearInterval(interval)
+        displayBalance = to
+        balanceAnimating = false
+      }
+    }, stepTime)
+  }
+
+  function formatBalance(n: number): string {
+    return n.toLocaleString('ru-RU')
+  }
+
+  function formatCountdownMs(diff: number): string {
+    const h = Math.floor(diff / 3600000)
+    const m = Math.floor((diff % 3600000) / 60000)
+    const s = Math.floor((diff % 60000) / 1000)
+    return h > 0 
+      ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+      : `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  function updateTimer() {
+    const nowMs = Date.now()
+
+    // Countdown to scheduled start (upcoming -> active)
+    if (auction?.status === 'upcoming' && auction.start_at) {
+      const startMs = new Date(auction.start_at).getTime()
+      const diffStart = startMs - nowMs
+
+      if (Number.isNaN(startMs)) {
+        startLeft = ''
+      } else if (diffStart <= 0) {
+        startLeft = '0:00'
+        // Poll until worker flips auction to active
+        if (nowMs - lastStartPollAt >= 1000) {
+          lastStartPollAt = nowMs
+          load({ silent: true })
+        }
+      } else {
+        startLeft = formatCountdownMs(diffStart)
+      }
+    } else {
+      startLeft = ''
+    }
+
+    // Countdown to round end
+    if (!round) {
+      timeLeft = ''
+      return
+    }
+
+    const endMs = new Date(round.end_at).getTime()
+    const diffEnd = endMs - nowMs
+
+    if (diffEnd <= 0) {
+      timeLeft = '0:00'
+      // Poll until worker creates next round / completes auction
+      if (nowMs - lastRoundPollAt >= 1000) {
+        lastRoundPollAt = nowMs
+        load({ silent: true })
+      }
+      return
+    }
+
+    timeLeft = formatCountdownMs(diffEnd)
+  }
+
+  function connectWs() {
+    if (ws) return
+    ws = new AuctionWebSocket(auctionId, getInitData())
+    ws.subscribe((event) => {
+      if (event.type === 'bid') {
+        if (event.leaderboard && Array.isArray(event.leaderboard)) {
+          leaderboard = event.leaderboard
+        }
+        triggerHaptic('light')
+      } else if (event.type === 'round_extended' && round) {
+        round = { ...round, end_at: event.round.end_at, extensions_count: event.round.extensions_count }
+        triggerHaptic('medium')
+      }
+    })
+    ws.connect()
+  }
+
+  onMount(async () => {
+    await load()
+    timer = setInterval(updateTimer, 1000)
+    updateTimer()
+    if (auction?.status === 'active') connectWs()
+  })
+
+  onDestroy(() => {
+    if (timer) clearInterval(timer)
+    ws?.disconnect()
+  })
+
+  const SLIDER_STEPS = 50
+  
+  function clamp(n: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, n))
+  }
+
+  function quantizeToStep(value: number, base: number, step: number): number {
+    if (!Number.isFinite(value)) return base
+    if (step <= 0) return Math.floor(value)
+    const diff = value - base
+    const steps = Math.round(diff / step)
+    return base + steps * step
+  }
+
+  function calcBidAmount(slider: number, start: number, max: number): string {
+    const range = max - start
+    if (range <= 0) return String(start)
+    const raw = start + (range * slider) / SLIDER_STEPS
+    const quantized = quantizeToStep(raw, minBidValue, bidStepValue)
+    return String(clamp(quantized, start, max))
+  }
+
+  $: minBidValue = auction ? Math.ceil(parseFloat(auction.min_bid)) : 1
+  $: bidStepValue = auction ? Math.ceil(parseFloat(auction.bid_step)) : 1
+  $: currentBidValue = myBid ? Math.floor(parseFloat(myBid.amount)) : 0
+  $: startBidValue = currentBidValue > 0 ? currentBidValue + bidStepValue : minBidValue
+  // Max you can bid now = liquid funds + already held amount in this auction (my current bid).
+  $: maxBidValue = $walletView.wallet ? Math.max(startBidValue, $walletView.available + currentBidValue) : 10000
+
+  $: sliderProgress = (sliderValue / SLIDER_STEPS) * 100
+
+  function onSliderInput(e: Event) {
+    const target = e.target as HTMLInputElement
+    const newValue = parseInt(target.value)
+    
+    if (Math.abs(newValue - prevSliderValue) >= 2) {
+      triggerSliderTick()
+      prevSliderValue = newValue
+    }
+    
+    sliderValue = newValue
+    bidAmount = calcBidAmount(sliderValue, startBidValue, maxBidValue)
+    
+    if (sliderValue >= SLIDER_STEPS) {
+      showCustomInput = true
+      customBidValue = bidAmount
+    } else {
+      showCustomInput = false
+    }
+  }
+
+  function submitCustomBid() {
+    const raw = Math.floor(parseFloat(customBidValue))
+    if (Number.isNaN(raw) || raw <= 0) return
+
+    const quantized = quantizeToStep(raw, minBidValue, bidStepValue)
+    bidAmount = String(clamp(quantized, startBidValue, maxBidValue))
+    showCustomInput = false
+    placeBid()
+  }
+
+  async function placeBid() {
+    if (!auction || bidding) return
+    const amount = bidAmount.trim()
+    if (!amount || isNaN(parseFloat(amount))) return
+
+    bidding = true
+    bidError = ''
+    triggerHaptic('medium')
+
+    try {
+      const initData = getInitData()
+      const result = await apiPlaceBid(initData, auctionId, amount)
+      myBid = result.bid
+      round = result.round
+      leaderboard = result.leaderboard
+      
+      await walletStore.refresh()
+
+      const newCurrentBid = myBid ? Math.floor(parseFloat(myBid.amount)) : 0
+      const newStartBid = newCurrentBid + (auction ? Math.ceil(parseFloat(auction.bid_step)) : 1)
+      bidAmount = String(newStartBid)
+      sliderValue = 0
+      
+      triggerSuccessPattern()
+    } catch (e) {
+      bidError = e instanceof Error ? e.message : 'Ошибка ставки'
+      triggerErrorPattern()
+    } finally {
+      bidding = false
+    }
+  }
+
+  async function startAuction() {
+    if (!auction) return
+    triggerHaptic('medium')
+    try {
+      const initData = getInitData()
+      const result = await apiStartAuction(initData, auctionId)
+      auction = result.auction
+      round = result.round
+      const lb = await apiGetLeaderboard(initData, auctionId)
+      leaderboard = lb.leaderboard
+      connectWs()
+      triggerSuccessPattern()
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Ошибка'
+    }
+  }
+
+  function handleBack() {
+    triggerHaptic('light')
+    dispatch('back')
+  }
+
+  $: myEntry = leaderboard.find((b) => b.user_id === userId)
+  $: myRank = myEntry ? leaderboard.indexOf(myEntry) + 1 : 0
+  $: isWinning = round && myRank > 0 && myRank <= round.items_count
+  $: giftsProgress = auction ? `${auction.distributed_items} из ${auction.total_items}` : '0 из 0'
+
+  function formatAmount(amount: string): string {
+    const n = parseFloat(amount)
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M'
+    if (n >= 1000) return Math.floor(n).toLocaleString('ru-RU')
+    return amount
+  }
+</script>
+
+<div class="detail">
+  <header>
+    <button class="back-btn" on:click={handleBack}>
+      <IconChevronLeft size={24} stroke={2} />
+    </button>
+    <button 
+      class="balance-btn" 
+      class:pressed={balancePressed}
+            class:maxed={$walletView.available >= MAX_BALANCE}
+      on:click={depositBalance}
+    >
+      <span class="star">⭐</span>
+      <span class="balance-value">{formatBalance(displayBalance)}</span>
+    </button>
+  </header>
+
+  {#if loading}
+    <div class="loading-state">
+      <div class="skeleton-circle"></div>
+      <div class="skeleton-line w-40"></div>
+      <div class="skeleton-line w-60"></div>
+    </div>
+  {:else if error}
+    <div class="error-state">
+      <p>{error}</p>
+      <button on:click={() => load()}>Повторить</button>
+    </div>
+  {:else if auction}
+    {@const auctionPhoto = parseAuctionPhoto(auction.auction_photo)}
+    
+    {#if auction.status === 'active' && round}
+      <div class="content">
+        <div class="slider-section" in:scale={{ duration: 300 }}>
+          <div class="auction-icon" style="background: {auctionPhoto.gradientCss}">
+            <IconGavel size={40} stroke={1.5} color="white" />
+          </div>
+          
+          <div class="bid-amount">
+            <span class="star">⭐</span>
+            <span class="value">{formatAmount(bidAmount)}</span>
+          </div>
+
+          <div class="slider-wrap">
+            <div class="slider-track">
+              <div class="slider-fill" style="width: {sliderProgress}%"></div>
+            </div>
+            <input 
+              type="range" 
+              min="0" 
+              max={SLIDER_STEPS} 
+              value={sliderValue}
+              on:input={onSliderInput}
+            />
+          </div>
+          
+          <div class="slider-labels">
+            <span>{formatAmount(String(startBidValue))}</span>
+            <span>{formatAmount(String(maxBidValue))}</span>
+          </div>
+        </div>
+
+        {#if showCustomInput}
+          <div class="modal" transition:fade={{ duration: 150 }}>
+            <div class="modal-content" in:scale={{ duration: 200 }}>
+              <h3>Введите сумму</h3>
+              <input 
+                type="text" 
+                inputmode="numeric"
+                bind:value={customBidValue}
+                placeholder="0"
+              />
+              <div class="modal-actions">
+                <button class="btn-secondary" on:click={() => { showCustomInput = false; sliderValue = SLIDER_STEPS - 1 }}>
+                  Отмена
+                </button>
+                <button class="btn-primary" on:click={submitCustomBid}>
+                  Подтвердить
+                </button>
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        <div class="info" in:fly={{ y: 20, duration: 250, delay: 50 }}>
+          <h2>Размещение ставки</h2>
+          <p>Выигрывают {round.items_count} наибольших ставок</p>
+        </div>
+
+        <div class="stats" in:fly={{ y: 20, duration: 250, delay: 100 }}>
+          <div class="stat">
+            <span class="stat-value">⭐ {formatAmount(auction.min_bid)}</span>
+            <span class="stat-label">минимум</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value timer">{timeLeft || '—'}</span>
+            <span class="stat-label">до конца</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{giftsProgress}</span>
+            <span class="stat-label">раздано</span>
+          </div>
+        </div>
+
+        {#if myEntry}
+          <div class="my-position" class:winning={isWinning} in:fly={{ y: 20, duration: 250, delay: 150 }}>
+            <div class="position-rank" class:winner={isWinning}>{myRank}</div>
+            <span class="position-name">{myEntry.display_name}</span>
+            <span class="position-amount">⭐ {formatAmount(myEntry.amount)}</span>
+          </div>
+        {/if}
+
+        <div class="leaderboard" in:fly={{ y: 20, duration: 250, delay: 200 }}>
+          <h3>Топ участников</h3>
+          {#each leaderboard.slice(0, 10) as entry, idx}
+            <div class="leader-row" class:me={entry.user_id === userId}>
+              <span class="leader-rank" class:gold={idx === 0} class:silver={idx === 1} class:bronze={idx === 2}>
+                {idx + 1}
+              </span>
+              <div class="leader-avatar">
+                {#if entry.is_anonymous}
+                  {@const parsed = parseAnonPhoto(entry.display_photo)}
+                  <div class="anon" style="background: {parsed.gradientCss}">
+                    <svelte:component this={getAnimalIconComponent(parsed.animalId)} size={16} color="white" />
+                  </div>
+                {:else if entry.display_photo?.startsWith('http')}
+                  <img src={entry.display_photo} alt="" />
+                {:else}
+                  <div class="initial">{entry.display_name.charAt(0)}</div>
+                {/if}
+              </div>
+              <span class="leader-name">{entry.display_name}</span>
+              <span class="leader-amount">⭐ {formatAmount(entry.amount)}</span>
+            </div>
+          {/each}
+        </div>
+
+        {#if bidError}
+          <div class="bid-error" in:fly={{ y: 10, duration: 150 }}>{bidError}</div>
+        {/if}
+
+        <button class="bid-btn" on:click={placeBid} disabled={bidding}>
+          {#if bidding}
+            <span class="dots"><span></span><span></span><span></span></span>
+          {:else}
+            Сделать ставку · ⭐ {formatAmount(bidAmount)}
+          {/if}
+        </button>
+      </div>
+
+    {:else if auction.status === 'draft'}
+      <div class="placeholder">
+        <IconClock size={48} stroke={1.5} />
+        <p>Аукцион ещё не начался</p>
+        <button class="btn-primary" on:click={startAuction}>Начать</button>
+      </div>
+
+    {:else if auction.status === 'upcoming'}
+      <div class="placeholder">
+        <IconClock size={48} stroke={1.5} />
+        <p>Старт через {startLeft || '—'}</p>
+        <p class="sub">Ожидайте — аукцион запустится автоматически</p>
+      </div>
+
+    {:else if auction.status === 'completed'}
+      <div class="placeholder">
+        <IconTrophy size={48} stroke={1.5} />
+        <p>Аукцион завершён</p>
+        <p class="sub">Подарков раздано: {auction.distributed_items} из {auction.total_items}</p>
+        <div class="final-bid">⭐ {formatAmount(auction.highest_bid)}</div>
+        <span class="final-label">Топ ставка</span>
+      </div>
+    {/if}
+  {/if}
+</div>
+
+<style>
+  .detail {
+    min-height: 100vh;
+    background: var(--tg-theme-bg-color, #fff);
+    padding-bottom: 100px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    background: var(--tg-theme-bg-color, #fff);
+    z-index: 10;
+  }
+
+  .back-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--tg-theme-text-color, #000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .back-btn:active {
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
+  }
+
+  .balance-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
+    color: var(--tg-theme-text-color, #000);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 150ms ease, background 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .balance-btn:active,
+  .balance-btn.pressed {
+    transform: scale(1.02);
+    background: var(--tg-theme-button-color, #007aff);
+    color: #fff;
+  }
+
+  .balance-btn.maxed {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .star {
+    font-size: 13px;
+  }
+
+  .balance-value {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .content {
+    padding: 0 16px;
+  }
+
+  .slider-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    gap: 16px;
+  }
+
+  .auction-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bid-amount {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bid-amount .star {
+    font-size: 24px;
+  }
+
+  .bid-amount .value {
+    font-size: 36px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slider-wrap {
+    position: relative;
+    width: 100%;
+    height: 32px;
+  }
+
+  .slider-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.1));
+    transform: translateY(-50%);
+  }
+
+  .slider-fill {
+    height: 100%;
+    background: var(--tg-theme-button-color, #007aff);
+    border-radius: 2px;
+  }
+
+  .slider-wrap input {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .slider-wrap input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--tg-theme-button-color, #007aff);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #999);
+  }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+
+  .modal-content {
+    background: var(--tg-theme-bg-color, #fff);
+    padding: 24px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .modal-content h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .modal-content input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--tg-theme-hint-color, #ccc);
+    border-radius: 10px;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-secondary, .btn-primary {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-secondary {
+    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    color: var(--tg-theme-text-color, #000);
+  }
+
+  .btn-primary {
+    background: var(--tg-theme-button-color, #007aff);
+    color: #fff;
+  }
+
+  .info {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .info h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .info p {
+    margin: 0;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 14px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    border-radius: 10px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .stat-value.timer {
+    color: #ff3b30;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--tg-theme-hint-color, #999);
+  }
+
+  .my-position {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.04));
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+
+  .my-position.winning {
+    background: rgba(52, 199, 89, 0.12);
+  }
+
+  .position-rank {
+    width: 28px;
+    height: 28px;
+    background: #f5a623;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .position-rank.winner {
+    background: #34c759;
+  }
+
+  .position-name {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .position-amount {
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #666);
+  }
+
+  .leaderboard {
+    margin-bottom: 20px;
+  }
+
+  .leaderboard h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #999);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .leader-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.1));
+  }
+
+  .leader-row:last-child {
+    border-bottom: none;
+  }
+
+  .leader-row.me {
+    background: rgba(0, 122, 255, 0.08);
+    margin: 0 -16px;
+    padding: 10px 16px;
+    border-radius: 8px;
+  }
+
+  .leader-rank {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.08));
+    color: var(--tg-theme-hint-color, #666);
+  }
+
+  .leader-rank.gold {
+    background: #ffd700;
+    color: #fff;
+  }
+
+  .leader-rank.silver {
+    background: #c0c0c0;
+    color: #fff;
+  }
+
+  .leader-rank.bronze {
+    background: #cd7f32;
+    color: #fff;
+  }
+
+  .leader-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  .leader-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .anon, .initial {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .initial {
+    background: var(--tg-theme-button-color, #007aff);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .leader-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .leader-amount {
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #888);
+    font-size: 14px;
+  }
+
+  .bid-error {
+    padding: 12px;
+    background: rgba(255, 59, 48, 0.1);
+    color: #ff3b30;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .bid-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 16px;
+    right: 16px;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color, #007aff);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 150ms ease, opacity 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 50;
+  }
+
+  .bid-btn:active:not(:disabled) {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  .bid-btn:disabled {
+    opacity: 0.6;
+  }
+
+  .dots {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
+
+  .dots span:nth-child(1) { animation-delay: -0.32s; }
+  .dots span:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+  }
+
+  .placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+    color: var(--tg-theme-hint-color, #999);
+    text-align: center;
+  }
+
+  .placeholder p {
+    margin: 16px 0 4px;
+    font-size: 17px;
+    color: var(--tg-theme-text-color, #000);
+  }
+
+  .placeholder .sub {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #999);
+  }
+
+  .placeholder .btn-primary {
+    padding: 14px 32px;
+  }
+
+  .final-bid {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color, #000);
+    margin-top: 20px;
+  }
+
+  .final-label {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #999);
+    margin-top: 4px;
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px;
+  }
+
+  .skeleton-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.08));
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  .skeleton-line {
+    height: 20px;
+    border-radius: 4px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.08));
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  .w-40 { width: 40%; }
+  .w-60 { width: 60%; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+    color: var(--tg-theme-hint-color, #999);
+  }
+
+  .error-state button {
+    margin-top: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.05));
+    color: var(--tg-theme-button-color, #007aff);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+</style>

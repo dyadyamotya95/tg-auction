@@ -1,0 +1,12 @@
+{
+  "name": "@tac/telegram",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "dependencies": {
+    "@tma.js/init-data-node": "^2.0.6"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
