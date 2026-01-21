@@ -162,21 +162,23 @@
     border: none;
     border-radius: 7px;
     background: transparent;
-    color: var(--ios-label);
+    color: var(--ios-gray);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .filter-btn.active {
     background: var(--ios-bg-elevated);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.08);
+    color: var(--ios-label);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
   }
 
   :global(:root.dark) .filter-btn.active {
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    background: var(--ios-gray4);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   }
 
   .loading {
