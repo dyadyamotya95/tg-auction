@@ -62,5 +62,15 @@ services:
       WEBAPP_URL: ${WEBAPP_URL:-https://tg-auction-clone.online/}
     restart: unless-stopped
 
+  bots:
+    build: .
+    depends_on:
+      - api
+    command: ['pnpm', '--filter', '@tac/bots', 'start']
+    environment:
+      API_URL: http://api:3000
+      MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
+    restart: unless-stopped
+
 volumes:
   mongo-data: {}

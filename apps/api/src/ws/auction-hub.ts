@@ -82,7 +82,7 @@ export function notifyBid(auctionId: string, bid: {
   amount: string
   rank: number
   is_anonymous: boolean
-}, leaderboard: LeaderboardEntry[]) {
+}, leaderboard: LeaderboardEntry[], round?: { id: string; end_at: string; extensions_count: number }) {
   broadcastToAuction(auctionId, {
     type: 'bid',
     bid: {
@@ -90,6 +90,7 @@ export function notifyBid(auctionId: string, bid: {
       user_id: bid.is_anonymous ? null : bid.user_id,
     },
     leaderboard: maskLeaderboard(leaderboard),
+    round: round ?? null,
     ts: Date.now(),
   })
 }

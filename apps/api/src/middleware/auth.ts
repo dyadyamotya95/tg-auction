@@ -11,6 +11,7 @@ import { toUserPublic } from '../helpers/user.js'
 const DEV_USER_ID = 1
 const DEV_INIT_DATA = 'dev'
 const TEST_PREFIX = 'test:'
+const BOT_PREFIX = 'bot:'
 
 export type AuthData = {
   tgUser: TelegramInitDataUser
@@ -37,6 +38,46 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
     return c.json({ ok: false, error: 'x-init-data header is required' }, 401)
   }
 
+  if (initData.startsWith(BOT_PREFIX)) {
+    const botNum = parseInt(initData.slice(BOT_PREFIX.length), 10)
+    if (!Number.isNaN(botNum) && botNum >= 1 && botNum <= 5) {
+      const botUserId = 100000 + botNum
+      const anon = generateAnonIdentity()
+
+      const doc = await Users.findOneAndUpdate(
+        { telegram_user_id: botUserId },
+        {
+          $setOnInsert: {
+            telegram_user_id: botUserId,
+            is_anonymous: false,
+            anon_name: anon.anon_name,
+            anon_photo: anon.anon_photo,
+            onboarding_done: true,
+          },
+          $set: {
+            public_name: `Bot #${botNum}`,
+            public_photo: 'bot',
+          },
+        },
+        { new: true, upsert: true },
+      ).lean()
+
+      const botTgUser: TelegramInitDataUser = {
+        id: botUserId,
+        first_name: 'Bot',
+        last_name: `#${botNum}`,
+        username: `bot${botNum}`,
+        language_code: 'en',
+        is_premium: false,
+        allows_write_to_pm: true,
+      }
+
+      c.set('auth', { tgUser: botTgUser, user: toUserPublic(doc!) })
+      await next()
+      return
+    }
+  }
+
   // DEV_MODE: support "dev" (user_id=1) or "test:USER_ID" format
   if (config.dev_mode) {
     let devUserId: number | null = null
@@ -52,17 +93,20 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
 
     if (devUserId !== null) {
       const anon = generateAnonIdentity()
+
       const doc = await Users.findOneAndUpdate(
         { telegram_user_id: devUserId },
         {
           $setOnInsert: {
             telegram_user_id: devUserId,
-            public_name: `Dev User ${devUserId}`,
-            public_photo: '',
             is_anonymous: false,
             anon_name: anon.anon_name,
             anon_photo: anon.anon_photo,
             onboarding_done: false,
+          },
+          $set: {
+            public_name: `Dev User ${devUserId}`,
+            public_photo: '',
           },
         },
         { new: true, upsert: true },

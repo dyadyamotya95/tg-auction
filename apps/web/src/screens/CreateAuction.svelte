@@ -19,8 +19,8 @@
 
   let roundsCount = 3
   let itemsPerRound = 3
-  let firstRoundMinutes = 60
-  let otherRoundsMinutes = 10
+  let firstRoundMinutes = 5
+  let otherRoundsMinutes = 1
 
   let minBid = '1'
   let bidStep = '1'

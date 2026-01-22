@@ -198,7 +198,12 @@
         if (event.leaderboard && Array.isArray(event.leaderboard)) {
           leaderboard = event.leaderboard
         }
-        triggerHaptic('light')
+        if (event.round && round) {
+          round = { ...round, end_at: event.round.end_at, extensions_count: event.round.extensions_count }
+          triggerHaptic('medium')
+        } else {
+          triggerHaptic('light')
+        }
       } else if (event.type === 'round_extended' && round) {
         round = { ...round, end_at: event.round.end_at, extensions_count: event.round.extensions_count }
         triggerHaptic('medium')

@@ -19,6 +19,7 @@ type BidEvent = {
     is_anonymous: boolean
   }
   leaderboard: LeaderboardEntry[]
+  round: { id: string; end_at: string; extensions_count: number } | null
   ts: number
 }
 

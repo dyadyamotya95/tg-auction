@@ -10,6 +10,7 @@ import {
   IconMouse,
   IconPaw,
   IconPig,
+  IconRobot,
   IconUser,
 } from '@tabler/icons-svelte'
 
@@ -71,6 +72,13 @@ export function parseAnonPhoto(anon_photo: string | undefined): {
     return fallback
   }
 
+  if (anon_photo === 'bot') {
+    return {
+      gradientCss: 'linear-gradient(135deg, #6B7280, #9CA3AF)',
+      animalId: 'robot',
+    }
+  }
+
   const match = anon_photo.match(/^g(\d+)-(.+)$/i)
   if (!match) {
     return fallback
@@ -95,6 +103,7 @@ const ANIMAL_ICONS: Record<string, typeof IconUser> = {
   butterfly: IconButterfly,
   bug: IconBug,
   paw: IconPaw,
+  robot: IconRobot,
   user: IconUser,
 }
 

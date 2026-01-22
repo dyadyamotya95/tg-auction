@@ -30,7 +30,7 @@ import type {
   CreateAuctionRequest,
 } from '@tac/shared'
 import { getAuth, type AuthEnv } from '../middleware/auth.js'
-import { notifyBid, notifyRoundExtended, maskLeaderboard, type LeaderboardEntry } from '../ws/auction-hub.js'
+import { notifyBid, maskLeaderboard, type LeaderboardEntry } from '../ws/auction-hub.js'
 import { tgNotify } from '@tac/telegram'
 
 const auctions = new Hono<AuthEnv>()
@@ -821,6 +821,12 @@ auctions.post('/:id/bid', async (c) => {
   const leaderboard = await buildLeaderboard(txResult.round._id, txResult.round.items_count)
 
   if (txResult.bidChanged) {
+    const roundData = txResult.extended ? {
+      id: String(txResult.round._id),
+      end_at: txResult.round.end_at.toISOString(),
+      extensions_count: txResult.round.extensions_count ?? 0,
+    } : undefined
+
     notifyBid(id, {
       user_id: tgUser.id,
       display_name: displayName,
@@ -828,7 +834,7 @@ auctions.post('/:id/bid', async (c) => {
       amount: txResult.amount,
       rank: txResult.bidRank,
       is_anonymous: user.is_anonymous,
-    }, leaderboard)
+    }, leaderboard, roundData)
 
     const newTopUserIds = leaderboard.filter((e) => e.is_winner).map((e) => e.user_id)
     const knockedOut = prevTopUserIds.filter((uid) => !newTopUserIds.includes(uid) && uid !== tgUser.id)
@@ -839,14 +845,6 @@ auctions.post('/:id/bid', async (c) => {
         tgNotify.outbid(userId, userBid.amount, txResult.round.items_count, id, auctionDoc.auction_name)
       }
     }
-  }
-
-  if (txResult.extended) {
-    notifyRoundExtended(id, {
-      id: String(txResult.round._id),
-      end_at: txResult.round.end_at.toISOString(),
-      extensions_count: txResult.round.extensions_count,
-    })
   }
 
   return c.json({
