@@ -471,7 +471,7 @@
                 {idx + 1}
               </span>
               <div class="leader-avatar">
-                {#if entry.is_anonymous}
+                {#if entry.is_anonymous || entry.display_photo === 'bot'}
                   {@const parsed = parseAnonPhoto(entry.display_photo)}
                   <div class="anon" style="background: {parsed.gradientCss}">
                     <svelte:component this={getAnimalIconComponent(parsed.animalId)} size={16} color="white" />
