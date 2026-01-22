@@ -18,6 +18,7 @@
     "dev:api": "pnpm -F @tac/api dev",
     "dev:web": "pnpm -F @tac/web dev",
     "dev:bot": "pnpm -F @tac/bot dev",
+    "dev:bots": "pnpm -F @tac/bots dev",
     "dev:worker": "pnpm -F @tac/worker dev",
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
@@ -26,7 +27,11 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "prod:up": "docker compose -f compose.prod.yaml up -d",
+    "prod:build": "docker compose -f compose.prod.yaml up -d --build",
+    "prod:down": "docker compose -f compose.prod.yaml down",
+    "prod:logs": "docker compose -f compose.prod.yaml logs -f"
   },
   "keywords": [],
   "author": "Motya (https://t.me/dyadyamotya95)",
