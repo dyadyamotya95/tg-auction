@@ -13,6 +13,12 @@
   <img src="images/profile-and-gifts.png" width="260" alt="Profile">
 </p>
 
+<p align="center">
+  <b>Demo:</b> <a href="https://t.me/TGAuctionCloneBot">@TGAuctionCloneBot</a>
+</p>
+
+---
+
 ## Проблема, которую решал Telegram
 
 Представьте: вы запускаете продажу лимитированных подарков. Спрос превышает предложение в десятки раз. Боты скупают всё за миллисекунды. Живые пользователи не успевают. 
