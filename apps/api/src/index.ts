@@ -12,8 +12,6 @@ const { app: baseApp, setMongoReady } = createApp()
 const app = new Hono()
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app })
 
-app.route('/', baseApp)
-
 function verifyWsInitData(initData: string): { ok: true; userId: number } | { ok: false; error: string } {
   if (!initData) {
     return { ok: false, error: 'init_data is required' }
@@ -109,6 +107,8 @@ app.get(
     }
   }),
 )
+
+app.route('/', baseApp)
 
 async function main(): Promise<void> {
   if (config.dev_mode) {
