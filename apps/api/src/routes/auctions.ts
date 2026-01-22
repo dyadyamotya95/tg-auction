@@ -30,7 +30,7 @@ import type {
   CreateAuctionRequest,
 } from '@tac/shared'
 import { getAuth, type AuthEnv } from '../middleware/auth.js'
-import { notifyBid, notifyRoundExtended, type LeaderboardEntry } from '../ws/auction-hub.js'
+import { notifyBid, notifyRoundExtended, maskLeaderboard, type LeaderboardEntry } from '../ws/auction-hub.js'
 import { tgNotify } from '@tac/telegram'
 
 const auctions = new Hono<AuthEnv>()
@@ -482,7 +482,7 @@ auctions.get('/:id/leaderboard', async (c) => {
   const myBidDoc = await Bids.findOne({ round_id: round._id, user_id: tgUser.id, status: 'active' }).lean()
   const myBid = myBidDoc ? toBidDTO(myBidDoc) : undefined
 
-  return c.json({ ok: true, leaderboard, my_bid: myBid })
+  return c.json({ ok: true, leaderboard: maskLeaderboard(leaderboard), my_bid: myBid })
 })
 
 auctions.post('/:id/bid', async (c) => {
@@ -853,7 +853,7 @@ auctions.post('/:id/bid', async (c) => {
     ok: true,
     bid: toBidDTO(txResult.bid),
     round: toRoundDTO(txResult.round),
-    leaderboard,
+    leaderboard: maskLeaderboard(leaderboard),
   })
 })
 

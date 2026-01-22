@@ -1,6 +1,6 @@
 type LeaderboardEntry = {
   rank: number
-  user_id: number
+  user_id: number | null
   display_name: string
   display_photo: string
   is_anonymous: boolean

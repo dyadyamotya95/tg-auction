@@ -64,6 +64,17 @@ export type LeaderboardEntry = {
   is_winner: boolean
 }
 
+export type LeaderboardEntryPublic = Omit<LeaderboardEntry, 'user_id'> & {
+  user_id: number | null
+}
+
+export function maskLeaderboard(entries: LeaderboardEntry[]): LeaderboardEntryPublic[] {
+  return entries.map((e) => ({
+    ...e,
+    user_id: e.is_anonymous ? null : e.user_id,
+  }))
+}
+
 export function notifyBid(auctionId: string, bid: {
   user_id: number
   display_name: string
@@ -74,8 +85,11 @@ export function notifyBid(auctionId: string, bid: {
 }, leaderboard: LeaderboardEntry[]) {
   broadcastToAuction(auctionId, {
     type: 'bid',
-    bid,
-    leaderboard,
+    bid: {
+      ...bid,
+      user_id: bid.is_anonymous ? null : bid.user_id,
+    },
+    leaderboard: maskLeaderboard(leaderboard),
     ts: Date.now(),
   })
 }
