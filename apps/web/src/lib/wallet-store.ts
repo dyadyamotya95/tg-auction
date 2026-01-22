@@ -85,9 +85,9 @@ export const walletStore = {
 
 export const walletView = derived(state, ($s) => {
   // API returns: balance = total, available = liquid funds, hold = frozen
-  const balance = $s.wallet ? Math.floor(parseFloat($s.wallet.balance)) : 0
-  const hold = $s.wallet ? Math.floor(parseFloat($s.wallet.hold || '0')) : 0
-  const available = $s.wallet ? Math.floor(parseFloat($s.wallet.available || '0')) : 0
+  const balance = $s.wallet ? Math.floor(parseFloat($s.wallet.balance)) || 0 : 0
+  const hold = $s.wallet ? Math.floor(parseFloat($s.wallet.hold || '0')) || 0 : 0
+  const available = $s.wallet ? Math.floor(parseFloat($s.wallet.available || '0')) || 0 : 0
 
   return {
     wallet: $s.wallet,
