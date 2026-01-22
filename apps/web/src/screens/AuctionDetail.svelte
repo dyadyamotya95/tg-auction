@@ -441,7 +441,7 @@
             <span class="stat-label">минимум</span>
           </div>
           <div class="stat">
-            <span class="stat-value timer">{timeLeft || '—'}</span>
+            <span class="stat-value timer">{timeLeft || '–'}</span>
             <span class="stat-label">до конца</span>
           </div>
           <div class="stat">
@@ -506,8 +506,8 @@
     {:else if auction.status === 'upcoming'}
       <div class="placeholder">
         <IconClock size={48} stroke={1.5} />
-        <p>Старт через {startLeft || '—'}</p>
-        <p class="sub">Ожидайте — аукцион запустится автоматически</p>
+        <p>Старт через {startLeft || '–'}</p>
+        <p class="sub">Ожидайте – аукцион запустится автоматически</p>
       </div>
 
     {:else if auction.status === 'completed'}

@@ -112,7 +112,7 @@ app.route('/', baseApp)
 
 async function main(): Promise<void> {
   if (config.dev_mode) {
-    console.log('⚠️  DEV_MODE enabled — auth validation disabled')
+    console.log('⚠️  DEV_MODE enabled – auth validation disabled')
   }
 
   initTgNotify(config.telegram.bot_token, config.webapp.url)
