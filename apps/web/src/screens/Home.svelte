@@ -38,6 +38,15 @@
 
   onMount(async () => {
     await walletStore.refresh()
+
+    const path = window.location.pathname
+    const auctionMatch = path.match(/^\/auction\/([a-f0-9]{24})$/i)
+    if (auctionMatch) {
+      selectedAuctionId = auctionMatch[1]
+      screen = 'detail'
+    } else if (path === '/profile') {
+      tab = 'profile'
+    }
   })
 
   async function depositBalance() {
@@ -145,16 +154,16 @@
     triggerHaptic('light')
     selectedAuctionId = id
     screen = 'detail'
+    history.pushState(null, '', `/auction/${id}`)
   }
 
   async function onBack(): Promise<void> {
     screen = 'main'
     selectedAuctionId = ''
+    history.pushState(null, '', '/')
     try {
       await walletStore.refresh()
 
-      // Если пользователь вернулся в профиль — обновим подарки,
-      // чтобы выигранный подарок появился без перезагрузки приложения.
       if (tab === 'profile') {
         await loadGifts(true)
       }
@@ -164,6 +173,7 @@
   function onAuctionCreated(id: string): void {
     selectedAuctionId = id
     screen = 'detail'
+    history.pushState(null, '', `/auction/${id}`)
   }
 </script>
 
