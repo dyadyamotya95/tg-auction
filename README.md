@@ -8,8 +8,8 @@
 Реализация механики многораундовых аукционов Telegram для конкурса Crypto Bot (январь 2026).
 
 <p align="center">
-  <img src="images/auction.png" width="260" alt="Auction">
   <img src="images/auctions.png" width="260" alt="Auctions List">
+  <img src="images/auction.png" width="260" alt="Auction">
   <img src="images/profile-and-gifts.png" width="260" alt="Profile">
 </p>
 
