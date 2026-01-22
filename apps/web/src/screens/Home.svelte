@@ -101,8 +101,8 @@
     } catch {}
   }
 
-  $: if (tab === 'profile' && !giftsLoaded) {
-    loadGifts()
+  $: if (tab === 'profile') {
+    loadGifts(true)
   }
 
   function switchTab(newTab: typeof tab) {
