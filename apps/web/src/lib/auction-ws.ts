@@ -61,6 +61,7 @@ export class AuctionWebSocket {
     this.ws = new WebSocket(url)
 
     this.ws.onopen = () => {
+      console.log('[WS] connected, sending auth, initData length:', this.initData?.length)
       this.ws?.send(JSON.stringify({ type: 'auth', init_data: this.initData }))
     }
 

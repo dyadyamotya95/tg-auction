@@ -8,8 +8,13 @@ export function getInitData(): string {
     return DEV_INIT_DATA
   }
   try {
-    return initData.raw() ?? ''
-  } catch {
+    const raw = initData.raw() ?? ''
+    if (!raw) {
+      console.warn('[initData] raw() returned empty')
+    }
+    return raw
+  } catch (e) {
+    console.warn('[initData] error:', e)
     return ''
   }
 }

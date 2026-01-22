@@ -40,6 +40,7 @@ function verifyWsInitData(initData: string): { ok: true; userId: number } | { ok
   })
 
   if (!res.ok) {
+    console.log('[WS] verifyTelegramInitData failed:', res.error)
     return { ok: false, error: res.error }
   }
 
@@ -78,6 +79,7 @@ app.get(
 
               const authResult = verifyWsInitData(msg.init_data)
               if (!authResult.ok) {
+                console.log('[WS] auth failed:', authResult.error, 'init_data length:', msg.init_data?.length)
                 ws.send(JSON.stringify({ type: 'error', error: authResult.error, ts: Date.now() }))
                 ws.close(4001, authResult.error)
                 return
