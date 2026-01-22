@@ -17,6 +17,7 @@
   let filter: 'all' | 'active' | 'completed' = 'all'
   let pollTimer: ReturnType<typeof setTimeout> | null = null
   let isPolling = false
+  let destroyed = false
 
   async function load(silent = false) {
     if (!silent) {
@@ -32,7 +33,7 @@
   }
 
   async function poll() {
-    if (isPolling) return
+    if (isPolling || destroyed) return
     isPolling = true
     try {
       await load(true)
@@ -43,8 +44,9 @@
   }
 
   function schedulePoll() {
+    if (destroyed) return
     if (pollTimer) clearTimeout(pollTimer)
-    pollTimer = setTimeout(poll, 1000)
+    pollTimer = setTimeout(poll, 60_000)
   }
 
   onMount(() => {
@@ -52,6 +54,7 @@
   })
 
   onDestroy(() => {
+    destroyed = true
     if (pollTimer) clearTimeout(pollTimer)
   })
 

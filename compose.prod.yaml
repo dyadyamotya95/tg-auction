@@ -59,6 +59,7 @@ services:
       PORT: '3000'
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
+      WEBAPP_URL: https://${DOMAIN}/
     expose:
       - '3000'
     restart: unless-stopped
