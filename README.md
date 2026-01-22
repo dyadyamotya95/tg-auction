@@ -14,7 +14,8 @@
 </p>
 
 <p align="center">
-  <b>Demo:</b> <a href="https://t.me/TGAuctionCloneBot">@TGAuctionCloneBot</a>
+  <b>Live Демо:</b> <a href="https://t.me/TGAuctionCloneBot">@TGAuctionCloneBot</a>
+  <b>Видео:</b> <a href="https://t.me/TGAuctionCloneVideo">@TGAuctionCloneVideo</a>
 </p>
 
 ---

@@ -189,11 +189,32 @@
 
   :global(html) {
     overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  :global(html::-webkit-scrollbar) {
+    display: none;
+  }
+
+  :global(body) {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  :global(body::-webkit-scrollbar) {
+    display: none;
   }
 
   :global(#app) {
     overflow-x: hidden;
     min-height: 100vh;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  :global(#app::-webkit-scrollbar) {
+    display: none;
   }
 
   :global(body) {
