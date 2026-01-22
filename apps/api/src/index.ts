@@ -17,6 +17,13 @@ function verifyWsInitData(initData: string): { ok: true; userId: number } | { ok
     return { ok: false, error: 'init_data is required' }
   }
 
+  if (initData.startsWith('bot:')) {
+    const botNum = parseInt(initData.slice(4), 10)
+    if (!Number.isNaN(botNum) && botNum >= 1 && botNum <= 5) {
+      return { ok: true, userId: 100000 + botNum }
+    }
+  }
+
   if (config.dev_mode) {
     if (initData === 'dev') {
       return { ok: true, userId: 1 }
