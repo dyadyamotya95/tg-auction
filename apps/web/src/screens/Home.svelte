@@ -194,6 +194,9 @@
         >
           <span class="star">⭐</span>
           <span class="balance-value">{formatBalance(displayBalance)}</span>
+          {#if $walletView.available < MAX_BALANCE}
+            <IconPlus size={14} class="plus-icon" />
+          {/if}
         </button>
       </div>
     </header>
@@ -378,6 +381,11 @@
 
   .balance-value {
     font-variant-numeric: tabular-nums;
+  }
+
+  .balance-btn :global(.plus-icon) {
+    opacity: 0.5;
+    margin-left: 2px;
   }
 
   .body {
