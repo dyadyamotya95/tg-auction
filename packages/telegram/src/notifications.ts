@@ -57,7 +57,7 @@ export const tgNotify = {
   },
 
   refund(userId: number, amount: string, auctionName: string) {
-    return send(userId, `Аукцион «${auctionName}» завершён. Ваша ставка ${amount} возвращена.`, {
+    return send(userId, `Аукцион «${auctionName}» завершён. Ваша ставка ${amount} ⭐ возвращена.`, {
       buttonText: 'Аукционы',
       buttonPath: '/',
     })
@@ -75,7 +75,7 @@ export const tgNotify = {
   },
 
   outbid(userId: number, amount: string, itemsCount: number, auctionId: string, auctionName: string) {
-    return send(userId, `Вас перебили! Вы вне топ-${itemsCount} в «${auctionName}».\nВаша ставка: ${amount}`, {
+    return send(userId, `Вас перебили! Вы вне топ-${itemsCount} в «${auctionName}».\nВаша ставка: ${amount} ⭐`, {
       buttonText: 'Поднять ставку',
       buttonPath: `/auction/${auctionId}`,
     })

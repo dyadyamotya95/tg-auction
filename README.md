@@ -1,4 +1,4 @@
-# Telegram Auction Clone
+# Конкурсная работа tg-auction
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-20+-green)
@@ -79,7 +79,7 @@ Telegram пришёл к элегантному решению: **многора
 
 > **Почему Svelte, а не React?** В продуктовой среде чаще выбирают React. Но это конкурсная работа без требований к фронтенду, и я хотел продемонстрировать работу с разными инструментами. Svelte 5 с новыми runes — демонстрация владения современными подходами к реактивности.
 
-> **Почему pnpm? Потому-что Workspaces.** Монорепа из 9 пакетов (4 apps + 5 packages). Все внутренние зависимости через `workspace:*` — изменения в `@tac/core` мгновенно видны в `@tac/api` без пересборки. Один `pnpm install` — все пакеты готовы. Один `pnpm dev` — всё стартует параллельно.
+> **Почему pnpm? Потому что Workspaces.** Монорепа из 9 пакетов (4 apps + 5 packages). Все внутренние зависимости через `workspace:*` — изменения в `@tac/core` мгновенно видны в `@tac/api` без пересборки. Один `pnpm install` — все пакеты готовы. Один `pnpm dev` — всё стартует параллельно.
 
 ### Архитектура:
 ```
@@ -281,27 +281,57 @@ Round.findOneAndUpdate(
 
 ## Диаграммы
 
-### Статусы аукциона
+### Размещение ставки
 
 ```mermaid
-stateDiagram-v2
-  [*] --> draft
-  draft --> upcoming: start_at в будущем
-  draft --> active: старт вручную
-  upcoming --> active: now >= start_at (worker)
-  active --> completed: финал последнего раунда
-  active --> completed: досрочно, если некого переносить
-  completed --> [*]
+sequenceDiagram
+    participant U as User
+    participant API
+    participant DB as MongoDB
+    participant WS as WebSocket
+
+    U->>API: POST /bid {amount}
+    API->>DB: Проверка баланса
+    alt Недостаточно средств
+        API-->>U: 400 insufficient funds
+    else OK
+        API->>DB: Транзакция: hold += delta, upsert bid
+        API->>DB: Пересчёт ранга
+        alt Попал в top-K за 30 сек до конца
+            API->>DB: Продление раунда (anti-sniping)
+            API->>WS: round_extended
+        end
+        API->>WS: bid event (leaderboard update)
+        API-->>U: 200 {bid, round, leaderboard}
+    end
 ```
 
-### Статусы раунда
+### Финализация раунда (Worker)
 
 ```mermaid
-stateDiagram-v2
-  [*] --> active
-  active --> finalizing: end_at наступил
-  finalizing --> completed: обработка winners + перенос/возвраты
-  completed --> [*]
+flowchart TD
+    A[Worker: проверка end_at] --> B{Раунд завершён?}
+    B -->|Нет| A
+    B -->|Да| C[Лок: status = finalizing]
+    C --> D[Ранжирование ставок]
+    D --> E[Top-K = winners]
+    
+    E --> F[Для каждого winner]
+    F --> G[Назначить gift]
+    G --> H[Capture: hold -= amount]
+    H --> I[Ledger: capture]
+    I --> J{Ещё winners?}
+    J -->|Да| F
+    J -->|Нет| K{Последний раунд?}
+    
+    K -->|Нет| L[Transfer: создать bids в новом раунде]
+    L --> M[Старт следующего раунда]
+    
+    K -->|Да| N[Refund: release hold проигравшим]
+    N --> O[Auction: status = completed]
+    
+    M --> P[Round: status = completed]
+    O --> P
 ```
 
 ---
