@@ -74,6 +74,7 @@ services:
     environment:
       MONGO_URI: mongodb://mongo:27017/tac?replicaSet=rs0
       WORKER_INTERVAL_MS: ${WORKER_INTERVAL_MS:-100}
+      WEBAPP_URL: https://${DOMAIN}/
     restart: unless-stopped
 
   web:
