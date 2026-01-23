@@ -13,12 +13,8 @@ services:
       - mongo
     volumes:
       - ./docker/mongo/init-replica.js:/init-replica.js:ro
-    command:
-      [
-        'sh',
-        '-lc',
-        'i=0; until mongosh --host mongo:27017 /init-replica.js; do i=$((i+1)); if [ "$i" -ge 60 ]; then exit 1; fi; echo "mongo-init: retry $i/60"; sleep 1; done',
-      ]
+    command: >
+      sh -c 'i=0; until mongosh --host mongo:27017 /init-replica.js; do i=$$((i+1)); if [ "$$i" -ge 60 ]; then exit 1; fi; echo "mongo-init: retry $$i/60"; sleep 1; done'
     restart: 'no'
 
   api:

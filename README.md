@@ -22,7 +22,7 @@
 
 ## Механика Telegram Gift Auctions
 
-Telegram решает проблему распределения дефицитных товаров через **многораундовые аукционы**. Кто-то платит миллионы звёзд за топовый номер в первом раунде, другой дожидается финала и покупает за минимальную ставку.
+Изучив несколько аукционов, я понял что Telegram решает проблему распределения дефицитных товаров через **многораундовые аукционы**. Кто-то платит миллионы звёзд за топовый номер в первом раунде, другой дожидается финала и покупает за минимальную ставку.
 
 Эта работа – реализация этой механики.
 
@@ -42,6 +42,7 @@ Telegram решает проблему распределения дефицит
 - Все операции через `big.js` – никаких float-ошибок
 - Транзакции MongoDB гарантируют атомарность
 - Идемпотентность: повторный запрос не создаст дубликат
+- Audit скрипт для проверки инвариантов на живой БД
 
 ### 3. Устойчивость к нагрузке
 - WebSocket для real-time обновлений
@@ -173,7 +174,9 @@ Draft → Upcoming → Active → Completed
    - Актуальный раунд (`round`, включая `end_at`)
    - Обновлённый баланс
 
-**Никаких списаний!** Деньги перемещаются из `balance` в `hold`. Финальное списание (capture) только при победе.
+**Никаких списаний** Деньги перемещаются из `balance` в `hold`. Финальное списание (capture) только при победе.
+
+**Идемпотентность:** повторный запрос ставки с той же суммой не создаёт дубликат и не делает двойной hold. Это защищает от сетевых ретраев и двойных нажатий.
 
 ### Кто выигрывает: ранжирование и tie-breaker
 
@@ -345,12 +348,12 @@ pnpm --filter @tac/core test
 pnpm --filter @tac/api test
 ```
 
-**Что покрыто тестами (99 тестов):**
+**Что покрыто тестами (101 тест):**
 
 | Пакет | Тип | Покрытие |
 |-------|-----|----------|
 | `@tac/core` | Unit (65) | Wallet operations (hold/release/capture), bid validation, ranking, tie-breaker, anti-sniping logic |
-| `@tac/api` | Integration (34) | Auction CRUD, bidding flow, balance/hold checks, leaderboard, winners selection, round extensions, **round finalization (capture/refund/transfer)**, edge cases (zero bidders, early completion, multiple wins) |
+| `@tac/api` | Integration (36) | Auction CRUD, bidding flow, balance/hold checks, leaderboard, winners selection, round extensions, **anti-sniping top-K logic**, **round finalization (capture/refund/transfer)**, edge cases (zero bidders, early completion, multiple wins) |
 
 Integration тесты используют `mongodb-memory-server` с replica set для поддержки транзакций.
 
@@ -370,6 +373,20 @@ pnpm load-test
 - победители получили gifts
 - деньги списались/вернулись корректно
 
+### Audit (проверка инвариантов)
+
+```bash
+pnpm run audit
+```
+
+Скрипт проверяет:
+- `balance + hold >= 0` для всех кошельков
+- `hold == сумма активных ставок` для каждого пользователя
+- Нет двойных capture/release для одной ставки
+- Все owned gifts имеют запись capture в ledger
+- Все won bids имеют award_number
+- Completed auctions не имеют active bids
+
 ---
 
 ## Ограничения текущей версии
@@ -380,6 +397,7 @@ pnpm load-test
 - **Messaging** – брокер сообщений между Worker и API (см. ниже)
 - **Защита** – rate limiting, IP throttling
 - **Мониторинг** – Prometheus, Grafana, Sentry
+- **Структурный логгер** – pino вместо console.* для JSON логов и агрегации
 
 ### CORS Policy
 

@@ -8,12 +8,15 @@ async function main() {
   initTgNotify(config.telegram.bot_token, config.webapp.url)
   console.log('Worker started, polling every', config.worker.interval_ms, 'ms')
 
+  console.log('Running recovery tick...')
+  await tick()
+
   const run = async () => {
     await tick()
     setTimeout(run, config.worker.interval_ms)
   }
 
-  run()
+  setTimeout(run, config.worker.interval_ms)
 }
 
 main().catch((err) => {

@@ -18,7 +18,7 @@
     "@tac/shared": "workspace:*",
     "@tac/telegram": "workspace:*",
     "big.js": "^7.0.1",
-    "hono": "^4.9.0"
+    "hono": "^4.11.5"
   },
   "devDependencies": {
     "@tac/worker": "workspace:*",

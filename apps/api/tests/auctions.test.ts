@@ -452,6 +452,126 @@ describe('auctions API', () => {
       expect(roundAfter!.extensions_count).toBe(1)
       expect(bidJson.round.extensions_count).toBe(1)
     })
+
+    it('does NOT extend round when bid is outside top-K', async () => {
+      await createTestUser(100, '1000')
+      await createTestUser(200, '500')
+      await createTestUser(300, '500')
+      await createTestUser(400, '500')
+
+      const { json: createJson } = await apiRequest(app, 'POST', '/api/v1/auctions', {
+        userId: 100,
+        body: {
+          auction_name: 'TopK Sniping Test',
+          auction_photo: 'https://example.com/photo.png',
+          rounds_count: 1,
+          items_per_round: 2,
+          first_round_minutes: 1,
+          min_bid: '10',
+          bid_step: '10',
+          anti_sniping: {
+            enabled: true,
+            threshold_seconds: 60,
+            extension_seconds: 30,
+            max_extensions: 5,
+          },
+        },
+      })
+
+      await apiRequest(app, 'POST', `/api/v1/auctions/${createJson.auction.id}/start`, {
+        userId: 100,
+      })
+
+      const auctionId = createJson.auction.id
+
+      // User 200 bids 100 (will be rank 1)
+      await apiRequest(app, 'POST', `/api/v1/auctions/${auctionId}/bid`, {
+        userId: 200,
+        body: { amount: '100' },
+      })
+
+      // User 300 bids 50 (will be rank 2)
+      await apiRequest(app, 'POST', `/api/v1/auctions/${auctionId}/bid`, {
+        userId: 300,
+        body: { amount: '50' },
+      })
+
+      // Get round end time after top-K bids (extensions happened)
+      const roundBefore = await Rounds.findOne({ auction_id: auctionId })
+      const endBefore = roundBefore!.end_at.getTime()
+      const extensionsBefore = roundBefore!.extensions_count ?? 0
+
+      // User 400 bids 10 - this is rank 3, OUTSIDE top-2
+      // Should NOT trigger extension
+      await apiRequest(app, 'POST', `/api/v1/auctions/${auctionId}/bid`, {
+        userId: 400,
+        body: { amount: '10' },
+      })
+
+      const roundAfter = await Rounds.findOne({ auction_id: auctionId })
+      const endAfter = roundAfter!.end_at.getTime()
+      const extensionsAfter = roundAfter!.extensions_count ?? 0
+
+      // Round should NOT be extended for non-top-K bid
+      expect(endAfter).toBe(endBefore)
+      expect(extensionsAfter).toBe(extensionsBefore)
+    })
+
+    it('respects max_extensions limit', async () => {
+      await createTestUser(100, '1000')
+      await createTestUser(200, '500')
+      await createTestUser(300, '500')
+
+      // 1 item = only top-1 wins, max 2 extensions
+      const { json: createJson } = await apiRequest(app, 'POST', '/api/v1/auctions', {
+        userId: 100,
+        body: {
+          auction_name: 'Max Extensions Test',
+          auction_photo: 'https://example.com/photo.png',
+          rounds_count: 1,
+          items_per_round: 1,
+          first_round_minutes: 1,
+          min_bid: '10',
+          bid_step: '10',
+          anti_sniping: {
+            enabled: true,
+            threshold_seconds: 120, // 2 min threshold (entire round is in threshold)
+            extension_seconds: 30,
+            max_extensions: 2,
+          },
+        },
+      })
+
+      await apiRequest(app, 'POST', `/api/v1/auctions/${createJson.auction.id}/start`, {
+        userId: 100,
+      })
+
+      const auctionId = createJson.auction.id
+
+      // Bid 1: triggers extension #1
+      await apiRequest(app, 'POST', `/api/v1/auctions/${auctionId}/bid`, {
+        userId: 200,
+        body: { amount: '50' },
+      })
+      let round = await Rounds.findOne({ auction_id: auctionId })
+      expect(round!.extensions_count).toBe(1)
+
+      // Bid 2: triggers extension #2
+      await apiRequest(app, 'POST', `/api/v1/auctions/${auctionId}/bid`, {
+        userId: 300,
+        body: { amount: '100' },
+      })
+      round = await Rounds.findOne({ auction_id: auctionId })
+      expect(round!.extensions_count).toBe(2)
+
+      // Bid 3: max_extensions reached, no more extensions
+      await apiRequest(app, 'POST', `/api/v1/auctions/${auctionId}/bid`, {
+        userId: 200,
+        body: { amount: '150' },
+      })
+      round = await Rounds.findOne({ auction_id: auctionId })
+      expect(round!.extensions_count).toBe(2) // Still 2, limit reached
+    })
   })
 
   describe('GET /api/v1/auctions', () => {

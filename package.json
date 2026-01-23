@@ -24,6 +24,7 @@
     "test": "pnpm -r --if-present test",
     "load-test": "tsx scripts/load-test.ts",
     "demo": "tsx scripts/demo-auction.ts",
+    "audit": "tsx scripts/audit.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
@@ -39,6 +40,7 @@
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "big.js": "^7.0.1",
     "eslint": "^9.39.2",
     "prettier": "^3.7.4",
     "prettier-plugin-svelte": "^3.4.1",

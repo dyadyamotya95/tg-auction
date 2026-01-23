@@ -11,6 +11,9 @@ importers:
       '@eslint/js':
         specifier: ^9.39.2
         version: 9.39.2
+      big.js:
+        specifier: ^7.0.1
+        version: 7.0.1
       eslint:
         specifier: ^9.39.2
         version: 9.39.2
@@ -19,7 +22,7 @@ importers:
         version: 3.7.4
       prettier-plugin-svelte:
         specifier: ^3.4.1
-        version: 3.4.1(prettier@3.7.4)(svelte@5.46.1)
+        version: 3.4.1(prettier@3.7.4)(svelte@5.48.0)
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -31,10 +34,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.18.0
-        version: 1.19.7(hono@4.11.3)
+        version: 1.19.7(hono@4.11.5)
       '@hono/node-ws':
         specifier: ^1.2.0
-        version: 1.3.0(@hono/node-server@1.19.7(hono@4.11.3))(hono@4.11.3)
+        version: 1.3.0(@hono/node-server@1.19.7(hono@4.11.5))(hono@4.11.5)
       '@tac/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -54,8 +57,8 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
       hono:
-        specifier: ^4.9.0
-        version: 4.11.3
+        specifier: ^4.11.5
+        version: 4.11.5
     devDependencies:
       '@tac/worker':
         specifier: workspace:*
@@ -127,20 +130,20 @@ importers:
     dependencies:
       '@tabler/icons-svelte':
         specifier: ^3.36.1
-        version: 3.36.1(svelte@5.46.1)
+        version: 3.36.1(svelte@5.48.0)
       '@tac/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@tma.js/sdk-svelte':
         specifier: ^1.0.15
-        version: 1.0.15(svelte@5.46.1)(typescript@5.9.3)
+        version: 1.0.15(svelte@5.48.0)(typescript@5.9.3)
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.3
-        version: 6.2.3(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
+        version: 6.2.3(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
       svelte:
-        specifier: ^5.46.1
-        version: 5.46.1
+        specifier: ^5.48.0
+        version: 5.48.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -909,8 +912,8 @@ packages:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
     engines: {node: '>=0.10.0'}
 
-  devalue@5.6.1:
-    resolution: {integrity: sha512-jDwizj+IlEZBunHcOuuFVBnIMPAEHvTsJj0BcIp94xYguLRVBcXO853px/MyIJvbVzWdsGvrRweIUWJw8hBP7A==}
+  devalue@5.6.2:
+    resolution: {integrity: sha512-nPRkjWzzDQlsejL1WVifk5rvcFi/y1onBRxjaFMjZeR9mFpqu2gmAZ9xUB9/IEanEP/vBtGeGganC/GO1fmufg==}
 
   dotenv@17.2.3:
     resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
@@ -1073,8 +1076,8 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  hono@4.11.3:
-    resolution: {integrity: sha512-PmQi306+M/ct/m5s66Hrg+adPnkD5jiO6IjA7WhWw0gSBSo1EcRegwuI1deZ+wd5pzCGynCcn2DprnE4/yEV4w==}
+  hono@4.11.5:
+    resolution: {integrity: sha512-WemPi9/WfyMwZs+ZUXdiwcCh9Y+m7L+8vki9MzDw3jJ+W9Lc+12HGsd368Qc1vZi1xwW8BWMMsnK5efYKPdt4g==}
     engines: {node: '>=16.9.0'}
 
   https-proxy-agent@7.0.6:
@@ -1394,8 +1397,8 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
-  svelte@5.46.1:
-    resolution: {integrity: sha512-ynjfCHD3nP2el70kN5Pmg37sSi0EjOm9FgHYQdC4giWG/hzO3AatzXXJJgP305uIhGQxSufJLuYWtkY8uK/8RA==}
+  svelte@5.48.0:
+    resolution: {integrity: sha512-+NUe82VoFP1RQViZI/esojx70eazGF4u0O/9ucqZ4rPcOZD+n5EVp17uYsqwdzjUjZyTpGKunHbDziW6AIAVkQ==}
     engines: {node: '>=18'}
 
   tar-stream@3.1.7:
@@ -1740,14 +1743,14 @@ snapshots:
 
   '@grammyjs/types@3.23.0': {}
 
-  '@hono/node-server@1.19.7(hono@4.11.3)':
+  '@hono/node-server@1.19.7(hono@4.11.5)':
     dependencies:
-      hono: 4.11.3
+      hono: 4.11.5
 
-  '@hono/node-ws@1.3.0(@hono/node-server@1.19.7(hono@4.11.3))(hono@4.11.3)':
+  '@hono/node-ws@1.3.0(@hono/node-server@1.19.7(hono@4.11.5))(hono@4.11.5)':
     dependencies:
-      '@hono/node-server': 1.19.7(hono@4.11.3)
-      hono: 4.11.3
+      '@hono/node-server': 1.19.7(hono@4.11.5)
+      hono: 4.11.5
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
@@ -1866,27 +1869,27 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/vite-plugin-svelte-inspector@5.0.2(@sveltejs/vite-plugin-svelte@6.2.3(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)))(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))':
+  '@sveltejs/vite-plugin-svelte-inspector@5.0.2(@sveltejs/vite-plugin-svelte@6.2.3(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)))(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 6.2.3(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
+      '@sveltejs/vite-plugin-svelte': 6.2.3(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
       obug: 2.1.1
-      svelte: 5.46.1
+      svelte: 5.48.0
       vite: 7.3.1(@types/node@25.0.3)(tsx@4.21.0)
 
-  '@sveltejs/vite-plugin-svelte@6.2.3(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))':
+  '@sveltejs/vite-plugin-svelte@6.2.3(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 5.0.2(@sveltejs/vite-plugin-svelte@6.2.3(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)))(svelte@5.46.1)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
+      '@sveltejs/vite-plugin-svelte-inspector': 5.0.2(@sveltejs/vite-plugin-svelte@6.2.3(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)))(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
       deepmerge: 4.3.1
       magic-string: 0.30.21
       obug: 2.1.1
-      svelte: 5.46.1
+      svelte: 5.48.0
       vite: 7.3.1(@types/node@25.0.3)(tsx@4.21.0)
       vitefu: 1.1.1(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0))
 
-  '@tabler/icons-svelte@3.36.1(svelte@5.46.1)':
+  '@tabler/icons-svelte@3.36.1(svelte@5.48.0)':
     dependencies:
       '@tabler/icons': 3.36.1
-      svelte: 5.46.1
+      svelte: 5.48.0
 
   '@tabler/icons@3.36.1': {}
 
@@ -1915,10 +1918,10 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@tma.js/sdk-svelte@1.0.15(svelte@5.46.1)(typescript@5.9.3)':
+  '@tma.js/sdk-svelte@1.0.15(svelte@5.48.0)(typescript@5.9.3)':
     dependencies:
       '@tma.js/sdk': 3.1.6(typescript@5.9.3)
-      svelte: 5.46.1
+      svelte: 5.48.0
     transitivePeerDependencies:
       - typescript
 
@@ -2227,7 +2230,7 @@ snapshots:
 
   deepmerge@4.3.1: {}
 
-  devalue@5.6.1: {}
+  devalue@5.6.2: {}
 
   dotenv@17.2.3: {}
 
@@ -2422,7 +2425,7 @@ snapshots:
 
   has-flag@4.0.0: {}
 
-  hono@4.11.3: {}
+  hono@4.11.5: {}
 
   https-proxy-agent@7.0.6:
     dependencies:
@@ -2666,10 +2669,10 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-svelte@3.4.1(prettier@3.7.4)(svelte@5.46.1):
+  prettier-plugin-svelte@3.4.1(prettier@3.7.4)(svelte@5.48.0):
     dependencies:
       prettier: 3.7.4
-      svelte: 5.46.1
+      svelte: 5.48.0
 
   prettier@3.7.4: {}
 
@@ -2753,7 +2756,7 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  svelte@5.46.1:
+  svelte@5.48.0:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -2763,7 +2766,7 @@ snapshots:
       aria-query: 5.3.2
       axobject-query: 4.1.0
       clsx: 2.1.1
-      devalue: 5.6.1
+      devalue: 5.6.2
       esm-env: 1.2.2
       esrap: 2.2.1
       is-reference: 3.0.3
